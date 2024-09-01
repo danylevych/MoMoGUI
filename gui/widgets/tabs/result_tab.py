@@ -1,5 +1,4 @@
-from PyQt5.QtCore import Qt, QPoint
-from PyQt5.QtWidgets import QMainWindow, QSplitter, QTextEdit, QTabWidget, QWidget, QVBoxLayout, QLabel, QPushButton, QInputDialog, QMenu, QAction
+from PyQt5.QtWidgets import QWidget, QVBoxLayout, QLabel, QPushButton, QInputDialog, QMenu, QAction
 from gui.widgets.system_table import SystemTable
 
 
