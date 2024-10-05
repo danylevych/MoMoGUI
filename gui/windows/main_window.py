@@ -41,7 +41,7 @@ class MainWindow(QMainWindow):
         self.systems_tab = SystemsTab(self.right_widget, self, lambda: self._reset_to_empty_systems_tab())
 
         if self.systems_tab.add_system_tab_via_dialog_window():
-            self._remove_old_system_tab_and_insert_new(self.systems_tab.systems_tab)
+            self._remove_old_system_tab_and_insert_new(self.systems_tab)
 
     def _remove_old_system_tab_and_insert_new(self, new_tab):
         self.right_widget.removeTab(0)
@@ -60,7 +60,7 @@ class MainWindow(QMainWindow):
             systems_data = self._get_system_data_and_validate(file_path)
 
             self.systems_tab = SystemsTab(self.right_widget, self)
-            self._remove_old_system_tab_and_insert_new(self.systems_tab.systems_tab)
+            self._remove_old_system_tab_and_insert_new(self.systems_tab)
 
             for system in systems_data['Systems']:
                 self.systems_tab.add_system_tab(SystemTable(system))
