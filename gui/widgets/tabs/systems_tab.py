@@ -61,7 +61,7 @@ class SystemsTab(QWidget):
         save_button = create_button(pixmap, hint='Save selected system', action=self._save_tab)
 
         pixmap = QPixmap('resources/img/buttons/matrix.png')
-        matrix_button = create_button(pixmap, hint='Create pairvise comparison matrix', action=None)
+        matrix_button = create_button(pixmap, hint='Create pairvise comparison matrix', action=self._hierarchy_analisys)
 
         pixmap = QPixmap('resources/img/buttons/delete.png')
         delete_button = create_button(pixmap, hint='Delete selected system', action=self._confirm_delete_selected_tab)
@@ -144,3 +144,9 @@ class SystemsTab(QWidget):
         tab_index = self.systems_tabs.currentIndex()
         if tab_index != -1:
             self._confirm_delete_tab(tab_index)
+
+    def _hierarchy_analisys(self):
+        tab_index = self.systems_tabs.currentIndex()
+        if tab_index != -1:
+            tab = self.systems_tabs.widget(tab_index)
+            tab.open_anahiepro_window()

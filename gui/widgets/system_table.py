@@ -3,12 +3,16 @@ from gui.widgets.centered_checkbox import CenteredCheckBox
 from random import randint
 from PyQt5.QtCore import Qt
 from momo.system_models.system_models import SystemModel
+from anahiepro.models.model import Model
+from anahiepro.nodes import Problem, Criteria, Alternative
 from PyQt5.QtWidgets import QTableWidget, QHBoxLayout, QVBoxLayout, QWidget, QInputDialog, QMenu, QTableWidgetItem, QPushButton
-
+from gui.windows.pairwise_comparison_window import ComparisonMatrixWindow
 
 class SystemTable(QWidget):
     def __init__(self, system: SystemModel | None = None, parent=None):
         super().__init__(parent=parent)
+
+        self.anahiepro_model = None
 
         # Create table widget
         self.table_widget = QTableWidget()
@@ -84,6 +88,7 @@ class SystemTable(QWidget):
         if ok:
             self.table_widget.verticalHeaderItem(index).setText(new_text)
 
+
     def _edit_column_header(self, index):
         current_text = self.table_widget.horizontalHeaderItem(index).text()
         new_text, ok = QInputDialog.getText(self, 'Edit Column Header', 'Enter new header text:', text=current_text)
@@ -95,9 +100,11 @@ class SystemTable(QWidget):
         self.table_widget.removeRow(index)
         self._check_empty_table()
 
+
     def delete_column(self, index):
         self.table_widget.removeColumn(index)
         self._check_empty_table()
+
 
     def show_column_context_menu(self, pos):
         menu = QMenu()
@@ -114,6 +121,7 @@ class SystemTable(QWidget):
         elif action == insert_action:
             self.add_alternative()
 
+
     def show_row_context_menu(self, pos):
         menu = QMenu()
         edit_action = menu.addAction("Edit")
@@ -129,12 +137,14 @@ class SystemTable(QWidget):
         elif action == insert_action:
             self.add_feature()
 
+
     def add_feature(self):
         name, ok = self._get_name_for("feature")
 
         if ok and name:
             index = self.table_widget.currentRow() + 1
             self._add_and_fill("feature", name, index)
+
 
     def add_alternative(self):
         name, ok = self._get_name_for("alternative")
@@ -143,9 +153,11 @@ class SystemTable(QWidget):
             index = self.table_widget.currentColumn() + 1
             self._add_and_fill("alternative", name, index)
 
+
     def _get_name_for(self, type):
         name, ok = QInputDialog.getText(self, f'Add {type}', f'Enter new {type} name:')
         return name, ok
+
 
     def _add_and_fill(self, type, name, index):
         if type == "alternative":
@@ -162,6 +174,7 @@ class SystemTable(QWidget):
             for i in range(self.table_widget.columnCount()):
                 self.table_widget.setCellWidget(index, i, CenteredCheckBox())
 
+
     def _check_empty_table(self):
         if self.table_widget.rowCount() == 0 and self.table_widget.columnCount() == 0:
             self.table_widget.clearContents()
@@ -170,6 +183,7 @@ class SystemTable(QWidget):
     def keyPressEvent(self, event):
         if event.key() == Qt.Key_Delete:
             self.delete_selected()
+
 
     def delete_selected(self):
         selected_rows = self.table_widget.selectionModel().selectedRows()
@@ -198,4 +212,13 @@ class SystemTable(QWidget):
         alternatives = [self.table_widget.horizontalHeaderItem(i).text() for i in range(self.table_widget.columnCount())]
 
         return SystemModel(self._name, data, features=features, alternatives=alternatives)
+
+    def open_anahiepro_window(self):
+        if self.anahiepro_model is None or len(self.anahiepro_model.alternatives) != self.table_widget.columnCount():
+            problem = Problem(self._name)
+            alternatives = [Alternative(self.table_widget.horizontalHeaderItem(i).text()) for i in range(self.table_widget.columnCount())]
+            self.anahiepro_model = Model(problem=problem, criterias=[], alternatives=alternatives)
+
+        self.anahiepro_window = ComparisonMatrixWindow(self.anahiepro_model)
+        self.anahiepro_window.show()
 
