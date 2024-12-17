@@ -6,7 +6,7 @@ class EmptySystemsTab(QWidget):
         super().__init__()
 
         self.parent = parent
-        self.systems_tab = QWidget()
+        self.tabs = QWidget()
         self.init_ui()
 
     def init_ui(self):
@@ -28,7 +28,7 @@ class EmptySystemsTab(QWidget):
         systems_layout.addLayout(buttons_layout)
         systems_layout.setAlignment(Qt.AlignCenter)
 
-        self.systems_tab.setLayout(systems_layout)
+        self.tabs.setLayout(systems_layout)
 
     def connect_action_to_add_button(self, action):
         self.add_tab_button.clicked.connect(action)
