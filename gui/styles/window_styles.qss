@@ -1,0 +1,357 @@
+/* ==============================
+   BASIC SETTINGS
+   ============================== */
+
+/* Global style for all widgets */
+QWidget {
+    background-color: #FFFFFF;  /* White background */
+    color: #000000;             /* Black text by default */
+    font-family: "Segoe UI", sans-serif;
+    font-size: 16px;
+}
+
+/* Reset margins and paddings for all child widgets (optional) */
+QWidget * {
+    margin: 0px;
+    padding: 0px;
+}
+
+/* ==============================
+   QLabel (text, headings, paragraphs)
+   ============================== */
+
+/* General QLabel style */
+QLabel {
+    color: #000000;     /* Black text */
+    font-family: "Segoe UI", sans-serif;
+    font-size: 16px;
+    padding: 5px;
+}
+
+/* Heading (h1) */
+QLabel h1 {
+    font-size: 28px;
+    font-weight: bold;
+    color: #000000;
+    margin-bottom: 15px;
+    text-align: center;
+}
+
+/* Paragraphs (p) */
+QLabel p {
+    font-size: 16px;
+    line-height: 1.6;
+    color: #000000;
+    margin: 10px 0;
+    word-wrap: break-word;
+    white-space: normal;
+}
+
+/* ==============================
+   QPushButton (buttons)
+   ============================== */
+/* Кнопки */
+QPushButton {
+    background-color: #666666;  /* Темно-сірий фон */
+    color: #FFFFFF;             /* Білий текст */
+    border: 1px solid #666666;  /* Темно-сірий бордер */
+    font-size: 16px;
+    padding: 6px 12px;
+    border-radius: 6px;
+}
+
+QPushButton:hover {
+    background-color: #555555;  /* Трішки темніший сірий при наведенні */
+    border-color: #555555;
+    color: #FFFFFF;
+}
+
+QPushButton:pressed {
+    background-color: #444444;  /* Ще темніший сірий при натисканні */
+    border-color: #444444;
+    color: #FFFFFF;
+}
+
+QPushButton:disabled {
+    background-color: #DDDDDD;  /* Світло-сірий для вимкнених кнопок */
+    color: #AAAAAA;
+    border-color: #DDDDDD;
+}
+
+/* ==============================
+   QLineEdit (single-line text input)
+   ============================== */
+QLineEdit {
+    background-color: #FFFFFF;
+    color: #000000;
+    border: 1px solid #000000;
+    border-radius: 4px;
+    padding: 4px 8px;
+}
+
+QLineEdit:focus {
+    border-color: #666666;      /* Darker border on focus */
+}
+
+/* ==============================
+   QPlainTextEdit / QTextEdit (multi-line text input)
+   ============================== */
+QPlainTextEdit, QTextEdit {
+    background-color: #FFFFFF;
+    color: #000000;
+    border: 1px solid #000000;
+    border-radius: 4px;
+    padding: 6px 8px;
+}
+
+QPlainTextEdit:focus, QTextEdit:focus {
+    border-color: #666666;
+}
+
+/* ==============================
+   QComboBox
+   ============================== */
+QComboBox {
+    background-color: #FFFFFF;
+    color: #000000;
+    border: 1px solid #000000;
+    border-radius: 4px;
+    padding: 4px 6px;
+    selection-background-color: #000000; /* Black highlight for selected items */
+    selection-color: #FFFFFF;           /* White text on black background */
+}
+
+QComboBox::drop-down {
+    subcontrol-origin: padding;
+    subcontrol-position: top right;
+    width: 24px;
+    border-left: 1px solid #000000;
+}
+
+QComboBox::down-arrow {
+    width: 12px;
+    height: 12px;
+    image: url(:/icons/arrow_down_black.png); /* Replace with your own black arrow icon */
+}
+
+QComboBox QAbstractItemView {
+    background-color: #FFFFFF;
+    color: #000000;
+    selection-background-color: #000000;
+    selection-color: #FFFFFF;
+    outline: 0;
+    border: 1px solid #000000;
+}
+
+/* ==============================
+   QGroupBox
+   ============================== */
+QGroupBox {
+    border: 1px solid #000000;
+    border-radius: 6px;
+    margin-top: 10px;
+    padding: 10px;
+}
+
+QGroupBox::title {
+    subcontrol-origin: margin;
+    subcontrol-position: top left;
+    padding: 0px 5px;
+    color: #000000;
+    background: transparent;
+}
+
+/* ==============================
+   QCheckBox / QRadioButton
+   ============================== */
+QCheckBox, QRadioButton {
+    spacing: 6px;
+    color: #000000;
+}
+
+QCheckBox::indicator, QRadioButton::indicator {
+    width: 18px;
+    height: 18px;
+}
+
+/* Unchecked (white) -> black border, Checked (black) -> black border, Indeterminate -> grey */
+QCheckBox::indicator:unchecked,
+QRadioButton::indicator:unchecked {
+    border: 2px solid #000000;
+    background: #FFFFFF;
+}
+
+QCheckBox::indicator:checked,
+QRadioButton::indicator:checked {
+    border: 2px solid #000000;
+    background: #000000;
+}
+
+QCheckBox::indicator:indeterminate {
+    background: #666666;
+    border: 2px solid #000000;
+}
+
+/* ==============================
+   QTabWidget, QTabBar, Tabs
+   ============================== */
+QTabWidget::pane {
+    border: 1px solid #000000;
+    background: #FFFFFF;
+    border-radius: 4px;
+}
+
+QTabBar::tab {
+    background: #FFFFFF;
+    color: #000000;
+    border: 1px solid #000000;
+    padding: 6px 12px;
+    margin: 0px 1px;
+    border-top-left-radius: 4px;
+    border-top-right-radius: 4px;
+}
+
+QTabBar::tab:selected {
+    background: #CCCCCC; /* Grey background for active tab */
+    color: #000000;
+}
+
+/* ==============================
+   QScrollBar (vertical and horizontal)
+   ============================== */
+/* Scrollbar track */
+QScrollBar:horizontal, QScrollBar:vertical {
+    background: #FFFFFF;
+    border: 1px solid #000000;
+    margin: 0px;
+}
+
+/* Scrollbar handle */
+QScrollBar::handle:horizontal, QScrollBar::handle:vertical {
+    background: #000000;
+}
+
+/* Scrollbar buttons */
+QScrollBar::add-line, QScrollBar::sub-line {
+    background: #FFFFFF;
+    border: 1px solid #000000;
+    width: 16px;
+    height: 16px;
+    subcontrol-origin: margin;
+}
+
+QScrollBar::add-line:hover, QScrollBar::sub-line:hover {
+    background: #DDDDDD;
+}
+
+QScrollBar::up-arrow, QScrollBar::down-arrow,
+QScrollBar::left-arrow, QScrollBar::right-arrow {
+    image: url(:/icons/arrow_black.png); /* Replace with your own black-and-white icon */
+}
+
+/* ==============================
+   QProgressBar
+   ============================== */
+QProgressBar {
+    border: 1px solid #000000;
+    border-radius: 4px;
+    text-align: center;
+    background: #FFFFFF;
+}
+
+QProgressBar::chunk {
+    background-color: #000000;
+    width: 10px;
+}
+
+/* ==============================
+   QTableView / QTreeView
+   ============================== */
+QTableView, QTreeView {
+    gridline-color: #000000;
+    selection-background-color: #888888;
+    selection-color: #000000;
+    border: 1px solid #000000;
+}
+
+QHeaderView::section {
+    background-color: #E0E0E0;
+    color: #000000;
+    border: 1px solid #000000;
+    padding: 4px;
+}
+
+QTableCornerButton::section {
+    background-color: #E0E0E0;
+    border: 1px solid #000000;
+}
+
+/* ==============================
+   QMenuBar, QMenu
+   ============================== */
+QMenuBar {
+    background-color: #FFFFFF;
+    border: 1px solid #000000;
+}
+
+QMenuBar::item {
+    background: transparent;
+    padding: 6px 12px;
+    margin: 0px 1px;
+}
+
+QMenuBar::item:selected {
+    background-color: #CCCCCC;
+}
+
+QMenu {
+    background-color: #FFFFFF;
+    border: 1px solid #000000;
+}
+
+QMenu::item {
+    padding: 6px 12px;
+}
+
+QMenu::item:selected {
+    background-color: #000000;
+    color: #FFFFFF;
+}
+
+/* ==============================
+   QToolTip
+   ============================== */
+QToolTip {
+    background-color: #000000;
+    color: #FFFFFF;
+    border: 1px solid #FFFFFF;
+    padding: 4px;
+    opacity: 200; /* Tooltip transparency */
+}
+
+/* ==============================
+   QFrame (lines)
+   ============================== */
+QFrame {
+    border: none;
+    background: transparent;
+}
+
+/* Horizontal line (QFrame::HLine) */
+QFrame[frameShape="4"] {
+    max-height: 1px;
+    border: 1px solid #000000;
+}
+
+/* Vertical line (QFrame::VLine) */
+QFrame[frameShape="5"] {
+    max-width: 1px;
+    border: 1px solid #000000;
+}
+
+/* ==============================
+   Final margin override for QLabel
+   ============================== */
+QLabel {
+    margin-bottom: 10px;
+}
