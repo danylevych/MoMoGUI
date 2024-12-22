@@ -41,7 +41,7 @@ class MainWindow(QMainWindow):
         self.splitter.addWidget(self.tabs_widget)
 
         self._create_systems_tabs()
-        self._create_results_tab()
+        # self._create_results_tab()
 
         self.setWindowTitle("MoMo")
         self.resize(800, 600)
@@ -163,6 +163,12 @@ class MainWindow(QMainWindow):
         prototype = self.prototype_gui.get_prototype()
         model = MoMoModel(self.systems_data, prototype)
         model.u = self.prototype_gui.get_similarity_measure_type()
-        print(model.u)
 
+        result_tab_data = {
+            "systems_names": model.system_models_.get_system_names(),
+            "similarity_menshure": model.get_similarity_measures(),
+        }
+
+        self.resultsTab = ResultsTab(result_tab_data)
+        self.tabs_widget.addTab(self.resultsTab, "Results")
 
