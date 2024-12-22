@@ -1,14 +1,31 @@
+import sys
 from PyQt5.QtCore import Qt, pyqtSignal
-from PyQt5.QtWidgets import QMainWindow, QSplitter, QTabWidget, QWidget, QVBoxLayout, QSizePolicy, QFileDialog
+from PyQt5.QtWidgets import (
+    QMainWindow,
+    QSplitter,
+    QTabWidget,
+    QWidget,
+    QVBoxLayout,
+    QSizePolicy,
+    QFileDialog,
+    QToolButton,
+    QTabBar,
+    QApplication
+)
+from PyQt5.QtGui import QIcon
+from PyQt5.QtCore import QSize
+
+# Імпорти ваших кастомних класів
 from gui.widgets.prototype_gui import PrototypeGUI
 from gui.widgets.tabs.result_tab import ResultsTab
 from gui.widgets.tabs.empty_system_tab import EmptySystemsTab
 from gui.widgets.system_table import SystemTable
 from gui.widgets.tabs.systems_tab import SystemsTab
+from gui.styles import load_window_style
+from src.file_validator import read_systems_data
+
 from momo.system_models.system_models import SystemModel
 from momo.model import MoMoModel
-from src.file_validator import read_systems_data
-from gui.styles import load_window_style
 
 
 class MainWindow(QMainWindow):
@@ -19,7 +36,8 @@ class MainWindow(QMainWindow):
         self.systems_data = systems_data or []
         self.systems_tab = None
         self.prototype_gui = None
-        self.chashe_prototype = None
+        self.cached_prototype = None
+        # self.cached_similarity_measure_result = None # <- Think about this
 
         self._setup_ui()
         self._setup_connections()
@@ -27,7 +45,6 @@ class MainWindow(QMainWindow):
 
     def _setup_ui(self):
         self.splitter = QSplitter(Qt.Horizontal, parent=self)
-
         self.setCentralWidget(self.splitter)
 
         self.prototype_widget = QWidget(parent=self)
@@ -37,11 +54,9 @@ class MainWindow(QMainWindow):
         self.splitter.addWidget(self.prototype_widget)
 
         self.tabs_widget = QTabWidget(parent=self)
-
         self.splitter.addWidget(self.tabs_widget)
 
         self._create_systems_tabs()
-        # self._create_results_tab()
 
         self.setWindowTitle("MoMo")
         self.resize(800, 600)
@@ -79,20 +94,54 @@ class MainWindow(QMainWindow):
 
     def _create_results_tab(self):
         self.resultsTab = ResultsTab()
-        self.tabs_widget.addTab(self.resultsTab, "Results")
+        self._add_tab(self.resultsTab, "Results", closeable=True)
+
+    def _add_tab(self, tab, title, closeable=False):
+        index = self.tabs_widget.addTab(tab, title)
+
+        if closeable:
+            close_button = QToolButton()
+            close_button.setIcon(QIcon.fromTheme("window-close"))
+            close_button.setIconSize(QSize(12, 12))
+            close_button.setStyleSheet("""
+                QToolButton {
+                    background-color: transparent;
+                    border: none;
+                    padding: 0px;
+                }
+                QToolButton:hover {
+                    background-color: #f44336;
+                    border-radius: 10px;
+                }
+            """)
+            close_button.setCursor(Qt.ArrowCursor)
+            close_button.setAutoRaise(True)
+            close_button.clicked.connect(lambda _, btn=close_button: self._close_tab(btn))
+            self.tabs_widget.tabBar().setTabButton(index, QTabBar.RightSide, close_button)
+
+            self.tabs_widget.setCurrentIndex(index)  # Set the window focus to the new Result tab
+
+    def _close_tab(self, button):
+        tab_bar = self.tabs_widget.tabBar()
+        tab_index = tab_bar.tabAt(button.mapTo(tab_bar, button.pos()))
+
+        if tab_index != -1:
+            self.tabs_widget.removeTab(tab_index)
 
     def _create_prototype_gui(self):
+        if not self.systems_data:
+            return
+
         prototype = MoMoModel(self.systems_data).get_prototype()
 
-        if self.chashe_prototype is not None and not self.chashe_prototype.empty:
-            overlapping_idx = prototype.index.intersection(self.chashe_prototype.index)
-            prototype.loc[overlapping_idx] = self.chashe_prototype.loc[overlapping_idx]
+        if self.cached_prototype is not None and not self.cached_prototype.empty:
+            overlapping_idx = prototype.index.intersection(self.cached_prototype.index)
+            prototype.loc[overlapping_idx] = self.cached_prototype.loc[overlapping_idx]
 
         self.prototype_gui = PrototypeGUI(prototype)
         self.prototype_gui.calculate_button.clicked.connect(self._calculate_combinations)
         self.prototype_widget.layout().addWidget(self.prototype_gui)
         self.splitter.setSizes(list(map(int, [self.width() * 0.28, self.width() * 0.72])))
-
 
     def _create_first_system_tab(self):
         self.systems_tab = SystemsTab(parent=self.tabs_widget, main_window=self, on_content_change=self._update_window)
@@ -106,6 +155,22 @@ class MainWindow(QMainWindow):
         self._init_empty_systems_tab()
         self.tabs_widget.setCurrentIndex(0)
 
+        if self.prototype_gui:
+            try:
+                self.prototype_gui.calculate_button.clicked.disconnect(self._calculate_combinations)
+            except TypeError:
+                print("Already disconnected")
+
+            self.prototype_widget.layout().removeWidget(self.prototype_gui)
+            self.prototype_gui.hide()
+            self.prototype_gui.deleteLater()
+            self.prototype_gui = None
+            self.cached_prototype = None
+
+            QApplication.processEvents()
+
+        self.splitter.setSizes(list(map(int, [self.width() * 0.01, self.width() * 0.99])))
+
     def _remove_old_system_tab_and_insert_new(self, new_tab):
         self.tabs_widget.removeTab(0)
         self.tabs_widget.insertTab(0, new_tab, "Systems")
@@ -118,7 +183,7 @@ class MainWindow(QMainWindow):
             return
 
         if self.prototype_gui:
-            self.chashe_prototype = self.prototype_gui.get_prototype()
+            self.cached_prototype = self.prototype_gui.get_prototype()
 
         if hasattr(self, 'systems_tab'):
             self.systems_data = []
@@ -136,8 +201,8 @@ class MainWindow(QMainWindow):
             self.prototype_gui.deleteLater()
             self.prototype_gui = None
 
-        self._create_prototype_gui()
-
+        if self.systems_data:
+            self._create_prototype_gui()
 
     def _upload_file(self):
         file_path, _ = QFileDialog.getOpenFileName(self, "Open File", "", "Excel Files (*.xlsx *.xls)")
@@ -155,7 +220,6 @@ class MainWindow(QMainWindow):
 
         self._recreate_prototype_gui()
 
-
     def _calculate_combinations(self):
         if not self.systems_data:
             return
@@ -170,5 +234,5 @@ class MainWindow(QMainWindow):
         }
 
         self.resultsTab = ResultsTab(result_tab_data)
-        self.tabs_widget.addTab(self.resultsTab, "Results")
+        self._add_tab(self.resultsTab, "Results", closeable=True)
 
