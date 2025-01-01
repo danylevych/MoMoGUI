@@ -52,22 +52,22 @@ QLabel p {
    ============================== */
 /* Кнопки */
 QPushButton {
-    background-color: #666666;  /* Темно-сірий фон */
-    color: #FFFFFF;             /* Білий текст */
-    border: 1px solid #666666;  /* Темно-сірий бордер */
+    background-color: #666666;
+    color: #FFFFFF;
+    border: 1px solid #666666;
     font-size: 16px;
     padding: 6px 12px;
     border-radius: 6px;
 }
 
 QPushButton:hover {
-    background-color: #555555;  /* Трішки темніший сірий при наведенні */
+    background-color: #555555;
     border-color: #555555;
     color: #FFFFFF;
 }
 
 QPushButton:pressed {
-    background-color: #444444;  /* Ще темніший сірий при натисканні */
+    background-color: #444444;
     border-color: #444444;
     color: #FFFFFF;
 }

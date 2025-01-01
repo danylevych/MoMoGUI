@@ -24,7 +24,7 @@ class ResultsTab(QWidget):
         # if not hasattr(data, "similarity_menshure"):
         #     raise ValueError("Data should be a dictionary")
 
-        print(data)
+        self._data = data
 
         self.systems_names = data["systems_names"]
         self.similarity_menshure = data["similarity_menshure"]
