@@ -16,3 +16,18 @@ if __name__ == "__main__":
     main_window = MainWindow([])
     main_window.show()
     sys.exit(app.exec_())
+
+
+# from src.ai import MoMoAgent
+
+
+# agent = MoMoAgent()
+
+# print(agent.ask("hello"))
+# print("\n"*4)
+# print(agent.ask("What can you help me with?"))
+# print("\n"*4)
+# print(agent.memory)
+# print("\n"*4)
+# print(agent.ask("What is Morfological Method?"))
+

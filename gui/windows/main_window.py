@@ -1,6 +1,7 @@
 import sys
 from PyQt5.QtCore import Qt, pyqtSignal
 from PyQt5.QtWidgets import (
+    ###########################
     QMainWindow,
     QSplitter,
     QTabWidget,
@@ -10,22 +11,27 @@ from PyQt5.QtWidgets import (
     QFileDialog,
     QToolButton,
     QTabBar,
-    QApplication
+    QApplication,
+    QDesktopWidget,
 )
+from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QIcon
 from PyQt5.QtCore import QSize
 
-# Імпорти ваших кастомних класів
 from gui.widgets.prototype_gui import PrototypeGUI
 from gui.widgets.tabs.result_tab import ResultsTab
 from gui.widgets.tabs.empty_system_tab import EmptySystemsTab
 from gui.widgets.system_table import SystemTable
 from gui.widgets.tabs.systems_tab import SystemsTab
-from gui.styles import load_window_style
+from gui.widgets.floating_button import FloatingButton
+from gui.styles import load_window_style, load_ask_ai_style
+from gui.widgets.ai.chat_widget import ChatbotApp
+
 from src.file_validator import read_systems_data
 
 from momo.system_models.system_models import SystemModel
 from momo.model import MoMoModel
+
 
 
 class MainWindow(QMainWindow):
@@ -37,7 +43,14 @@ class MainWindow(QMainWindow):
         self.systems_tab = None
         self.prototype_gui = None
         self.cached_prototype = None
-        # self.cached_similarity_measure_result = None # <- Think about this
+        self.chat_wndow = None
+
+        self.result_tab_data = {
+            "systems_names": "",
+            "similarity_menshure": "",
+            "prototype": "",
+            "df": ""
+        }
 
         self._setup_ui()
         self._setup_connections()
@@ -59,11 +72,42 @@ class MainWindow(QMainWindow):
         self._create_systems_tabs()
 
         self.setWindowTitle("MoMo")
-        self.resize(800, 600)
+        screen = QDesktopWidget().screenGeometry()
+        self.setGeometry(screen.left(), screen.top(), screen.width(), screen.height())
         self.splitter.setSizes(list(map(int, [self.width() * 0.01, self.width() * 0.99])))
 
         if self.systems_data:
             self._create_prototype_gui()
+
+        self._ask_ai_button()
+
+
+    def _ask_ai_button(self):
+        self.floating_button = FloatingButton(parent=self)
+        self.floating_button.setStyleSheet(load_window_style())
+        self.floating_button.button.setText("Ask AI")
+        self.floating_button.button.setStyleSheet(load_ask_ai_style())
+        self.floating_button.button.clicked.connect(self._create_momo_agent_widget)
+        self.floating_button.show()
+
+
+    def _create_momo_agent_widget(self):
+        self.chat_wndow = ChatbotApp(parent=self)
+        self.chat_wndow.setAttribute(Qt.WA_DeleteOnClose)
+        self.chat_wndow.setWindowTitle("MoMo Assistant")
+        self.chat_wndow.setGeometry(self.x() + self.width() - 350,
+                                    self.y() + self.height() - 370,
+                                    350, 400)
+        self.floating_button.hide()
+        self.chat_wndow.finished.connect(self.floating_button.show)
+        self.chat_wndow.show()
+
+
+    def closeEvent(self, event):
+        if self.chat_wndow:
+            self.chat_wndow.close()
+        event.accept()
+
 
     def _setup_connections(self):
         pass
@@ -92,10 +136,6 @@ class MainWindow(QMainWindow):
         self.empty_systems_tab.add_tab_button.clicked.connect(self._create_first_system_tab)
         self.empty_systems_tab.upload_file_button.clicked.connect(self._upload_file)
 
-    def _create_results_tab(self):
-        self.resultsTab = ResultsTab()
-        self._add_tab(self.resultsTab, "Results", closeable=True)
-
     def _add_tab(self, tab, title, closeable=False):
         index = self.tabs_widget.addTab(tab, title)
 
@@ -116,17 +156,10 @@ class MainWindow(QMainWindow):
             """)
             close_button.setCursor(Qt.ArrowCursor)
             close_button.setAutoRaise(True)
-            close_button.clicked.connect(lambda _, btn=close_button: self._close_tab(btn))
+            close_button.clicked.connect(lambda: self.tabs_widget.removeTab(index))
             self.tabs_widget.tabBar().setTabButton(index, QTabBar.RightSide, close_button)
 
             self.tabs_widget.setCurrentIndex(index)  # Set the window focus to the new Result tab
-
-    def _close_tab(self, button):
-        tab_bar = self.tabs_widget.tabBar()
-        tab_index = tab_bar.tabAt(button.mapTo(tab_bar, button.pos()))
-
-        if tab_index != -1:
-            self.tabs_widget.removeTab(tab_index)
 
     def _create_prototype_gui(self):
         if not self.systems_data:
@@ -228,11 +261,21 @@ class MainWindow(QMainWindow):
         model = MoMoModel(self.systems_data, prototype)
         model.u = self.prototype_gui.get_similarity_measure_type()
 
-        result_tab_data = {
+
+
+
+        import pandas as pd
+        data = model.get_similarity_measures()
+        columns = list(model.system_models_.get_system_names()) + ["Similarity"]
+        results = [(*list(key), value) for key, value in data.items()]
+        df = pd.DataFrame(results, columns=columns).sort_values(by="Similarity", ascending=False)[:30]
+
+        self.result_tab_data = {
             "systems_names": model.system_models_.get_system_names(),
             "similarity_menshure": model.get_similarity_measures(),
+            "prototype": model.get_prototype(),
+            "df": df
         }
 
-        self.resultsTab = ResultsTab(result_tab_data)
-        self._add_tab(self.resultsTab, "Results", closeable=True)
+        self._add_tab(ResultsTab(self.result_tab_data), "Results", closeable=True)
 

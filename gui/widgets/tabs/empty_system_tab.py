@@ -1,6 +1,7 @@
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QFileDialog
 
+
 class EmptySystemsTab(QWidget):
     def __init__(self, parent):
         super().__init__()

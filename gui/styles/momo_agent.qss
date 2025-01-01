@@ -1,0 +1,161 @@
+/* ==============================
+   Global Styles
+   ============================== */
+
+   QScrollArea {
+    border: none;
+    border-radius: 10px;
+    background-color: #FFFFFF;
+}
+
+QScrollBar:vertical {
+    background: #FFFFFF;
+    width: 15px;
+    margin: 22px 0 22px 0;
+    border-radius: 5px;
+}
+
+QScrollBar::handle:vertical {
+    background: #000000;
+    min-height: 20px;
+    border-radius: 5px;
+}
+
+QScrollBar::handle:vertical:hover {
+    background: #555555;
+}
+
+QScrollBar::handle:vertical:pressed {
+    background: #444444;
+}
+
+QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
+    background: #FFFFFF;
+    height: 20px;
+    subcontrol-origin: margin;
+    border-radius: 5px;
+}
+
+/* ==============================
+   Chat Bubble Styles
+   ============================== */
+
+QLabel[message-type="assistant-bubble"] {
+    background-color: #E8D8FF;
+    color: #5E2D91;
+    border: 1px solid #E8D8FF;
+    border-radius: 15px;
+    padding: 10px;
+    max-width: 70%;
+    word-wrap: break-word;
+}
+
+QLabel[message-type="user-bubble"] {
+    background-color: white;
+    color: #333333;
+    border: 1px solid #FFFFFF;
+    border-radius: 15px;
+    padding: 10px;
+    max-width: 70%;
+    word-wrap: break-word;
+}
+/* ==============================
+   QPushButton Styles
+   ============================== */
+
+QPushButton {
+    background-color: #000000;
+    color: #FFFFFF;
+    border-style: solid;
+    border-width: 2px;
+    border-radius: 10px;
+    border-color: #000000;
+    padding: 6px;
+    font-size: 14px;
+}
+
+QPushButton:hover {
+    border-color: #555555;
+    background-color: #555555;
+}
+
+QPushButton:pressed {
+    border-color: #444444;
+    background-color: #444444;
+    border-style: inset;
+}
+
+/* ==============================
+   QLineEdit (Input Field)
+   ============================== */
+
+QLineEdit {
+    background-color: #FFFFFF;
+    color: #000000;
+    border: 2px solid #000000;
+    border-radius: 10px;
+    padding: 4px 8px;
+}
+
+QLineEdit:focus {
+    border-color: #555555;
+}
+
+/* ==============================
+   Scroll Area Style
+   ============================== */
+
+QScrollBar:horizontal {
+    background: #FFFFFF;
+    height: 15px;
+    border: none;
+    margin: 0px 20px 0px 20px;
+}
+
+QScrollBar::handle:horizontal {
+    background: #000000;
+    min-width: 20px;
+    border-radius: 5px;
+}
+
+QScrollBar::add-line:horizontal, QScrollBar::sub-line:horizontal {
+    background: #FFFFFF;
+    width: 20px;
+    subcontrol-origin: margin;
+    border-radius: 5px;
+}
+
+/* ==============================
+   QLabel (Title Styling)
+   ============================== */
+
+QLabel.title {
+    font-weight: bold;
+    font-size: 18px;
+    margin-bottom: 10px;
+    color: #000000;
+    text-align: center;
+}
+
+/* ==============================
+   Tooltip
+   ============================== */
+
+QToolTip {
+    background-color: #000000;
+    color: #FFFFFF;
+    border: 1px solid #FFFFFF;
+    padding: 4px;
+}
+
+/* ==============================
+   Chat Bubble Alignment
+   ============================== */
+
+QLabel.bot-bubble {
+    text-align: left;
+}
+
+QLabel.user-bubble {
+    text-align: right;
+}

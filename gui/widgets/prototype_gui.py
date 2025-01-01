@@ -33,7 +33,7 @@ class PrototypeGUI(QWidget):
         self.main_layout.addWidget(self.table)
 
         similarity_layout = QFormLayout()
-        similarity_layout.setSpacing(2)  # Встановлюємо мінімальну відстань
+        similarity_layout.setSpacing(2)
 
         self.u_label = QLabel("Similarity measure:")
         font = self.u_label.font()
@@ -43,7 +43,7 @@ class PrototypeGUI(QWidget):
         self.u_type = QComboBox()
         self.u_type.addItems(["Sorensen–Dice", "Jaccard"])
 
-        similarity_layout.addRow(self.u_label, self.u_type)  # Лейбл зверху, QComboBox знизу
+        similarity_layout.addRow(self.u_label, self.u_type)
         self.main_layout.addLayout(similarity_layout)
 
         self.calculate_button = QPushButton("Calculate combinations")
