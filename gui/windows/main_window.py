@@ -25,7 +25,7 @@ from gui.widgets.system_table import SystemTable
 from gui.widgets.tabs.systems_tab import SystemsTab
 from gui.widgets.floating_button import FloatingButton
 from gui.styles import load_window_style, load_ask_ai_style
-from gui.widgets.ai.chat_widget import ChatbotApp
+from gui.widgets.ai.chat_widget import ChatAssistantWindow
 
 from src.file_validator import read_systems_data
 
@@ -92,7 +92,7 @@ class MainWindow(QMainWindow):
 
 
     def _create_momo_agent_widget(self):
-        self.chat_wndow = ChatbotApp(parent=self)
+        self.chat_wndow = ChatAssistantWindow(parent=self)
         self.chat_wndow.setAttribute(Qt.WA_DeleteOnClose)
         self.chat_wndow.setWindowTitle("MoMo Assistant")
         self.chat_wndow.setGeometry(self.x() + self.width() - 350,
