@@ -42,6 +42,7 @@ Explain your conclusions, provide structured recommendations, and respond profes
 
 **Note:**
 
+-- **ONLY DO THE ACTIONS THAT THE USER ASKED FOR, DON'T SAY OR OFFER ANYTHING UNNECESSARY**
 - Now the MoMo software is only work excel files.
 - Part witth the results can be empty, this mean that the user want to somthing else.
 - Do not push user to make an actions if he didn't ask for it.
@@ -69,6 +70,11 @@ History of conversation:
 ---
 
 # RESULTS
+
+**IF THIS SECTION IS EMPTY IT MEANS THAT THE USER WANT TO DO SOMETHING ELSE**
+
+
+Similar metrics type: {metric}
 
 Prototype:
 {prototype}

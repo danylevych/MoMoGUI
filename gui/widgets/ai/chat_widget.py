@@ -1,4 +1,4 @@
-from PyQt5.QtCore import pyqtSignal, QTimer
+from PyQt5.QtCore import pyqtSignal, QTimer, Qt, QEvent
 from PyQt5.QtWidgets import (
     ###########################
     QVBoxLayout,
@@ -13,11 +13,13 @@ from .chat_components.widgets import (
 )
 
 from src.assistant import MoMoAgent
+from gui.widgets.tabs.result_tab import ResultsTab
 from gui.styles import load_momo_agent_style
 
 
 class ChatAssistantWindow(QWidget):
     finished = pyqtSignal()
+    mimimized = pyqtSignal()
 
     def __init__(self, parent=None):
         super().__init__()
@@ -54,6 +56,13 @@ class ChatAssistantWindow(QWidget):
             self.worker.terminate()
         self.finished.emit()
         event.accept()
+
+
+    # def changeEvent(self, event):
+    #     if event.type() == QEvent.WindowStateChange:
+    #         if self.windowState() & Qt.WindowMinimized:
+    #             self.mimimized.emit()
+    #     super().changeEvent(event)
 
     def _send_message(self):
         if user_input := self.input_widget.get_user_input():
@@ -103,10 +112,18 @@ class ChatAssistantWindow(QWidget):
 
 
     def _set_current_tab_results(self):
+        result_tab :ResultsTab = self.parent_widget.get_current_result_tab()
+
+        if not result_tab:
+            return
+
+        if result_tab.table_results.empty:
+            return
+
         self.momo_agent.results(
-            # TODO: Return the current tab data.
-            prototype=self.parent_widget.result_tab_data.get("prototype", "").__str__(),
-            results=self.parent_widget.result_tab_data.get("data", "").__str__(),
+            prototype=result_tab.results.prototype.__str__(),
+            results=result_tab.table_results[:35].__str__(),
+            metric=result_tab.results.similarity_menshure_type.__str__()
         )
 
 

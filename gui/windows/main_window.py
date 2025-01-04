@@ -28,6 +28,7 @@ from gui.styles import load_window_style, load_ask_ai_style
 from gui.widgets.ai.chat_widget import ChatAssistantWindow
 
 from src.file_validator import read_systems_data
+from src.dtypes import ResultsMap
 
 from momo.system_models.system_models import SystemModel
 from momo.model import MoMoModel
@@ -44,13 +45,6 @@ class MainWindow(QMainWindow):
         self.prototype_gui = None
         self.cached_prototype = None
         self.chat_wndow = None
-
-        self.result_tab_data = {
-            "systems_names": "",
-            "similarity_menshure": "",
-            "prototype": "",
-            "df": ""
-        }
 
         self._setup_ui()
         self._setup_connections()
@@ -87,19 +81,22 @@ class MainWindow(QMainWindow):
         self.floating_button.setStyleSheet(load_window_style())
         self.floating_button.button.setText("Ask AI")
         self.floating_button.button.setStyleSheet(load_ask_ai_style())
-        self.floating_button.button.clicked.connect(self._create_momo_agent_widget)
+        self.floating_button.button.clicked.connect(self._show_momo_agent_widget)
         self.floating_button.show()
 
 
-    def _create_momo_agent_widget(self):
+    def _show_momo_agent_widget(self):
         self.chat_wndow = ChatAssistantWindow(parent=self)
         self.chat_wndow.setAttribute(Qt.WA_DeleteOnClose)
         self.chat_wndow.setWindowTitle("MoMo Assistant")
+        self.chat_wndow.setWindowFlags(Qt.Tool | Qt.WindowCloseButtonHint)
+
         self.chat_wndow.setGeometry(self.x() + self.width() - 350,
-                                    self.y() + self.height() - 370,
+                                    self.y() + self.height() - 360,
                                     350, 400)
         self.floating_button.hide()
         self.chat_wndow.finished.connect(self.floating_button.show)
+        self.chat_wndow.mimimized.connect(self.floating_button.show)
         self.chat_wndow.show()
 
 
@@ -261,21 +258,22 @@ class MainWindow(QMainWindow):
         model = MoMoModel(self.systems_data, prototype)
         model.u = self.prototype_gui.get_similarity_measure_type()
 
+        reults_map = ResultsMap(
+            systems_names=model.system_models_.get_system_names(),
+            similarity_menshure=model.get_similarity_measures(),
+            prototype=prototype,
+            similiraty_menshure_type=self.prototype_gui.get_similarity_measure_type()
+        )
 
+        self._add_tab(ResultsTab(reults_map), "Results", closeable=True)
 
+    def get_current_result_tab(self):
+        if self.tabs_widget.count() <= 1:
+            return None
 
-        import pandas as pd
-        data = model.get_similarity_measures()
-        columns = list(model.system_models_.get_system_names()) + ["Similarity"]
-        results = [(*list(key), value) for key, value in data.items()]
-        df = pd.DataFrame(results, columns=columns).sort_values(by="Similarity", ascending=False)[:30]
+        if isinstance(self.tabs_widget.currentWidget(), ResultsTab):
+            return self.tabs_widget.currentWidget()
 
-        self.result_tab_data = {
-            "systems_names": model.system_models_.get_system_names(),
-            "similarity_menshure": model.get_similarity_measures(),
-            "prototype": model.get_prototype(),
-            "df": df
-        }
+        return None
 
-        self._add_tab(ResultsTab(self.result_tab_data), "Results", closeable=True)
 
