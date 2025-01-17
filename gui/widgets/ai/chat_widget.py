@@ -19,7 +19,6 @@ from gui.styles import load_momo_agent_style
 
 class ChatAssistantWindow(QWidget):
     finished = pyqtSignal()
-    mimimized = pyqtSignal()
 
     def __init__(self, parent=None):
         super().__init__()
@@ -57,12 +56,6 @@ class ChatAssistantWindow(QWidget):
         self.finished.emit()
         event.accept()
 
-
-    # def changeEvent(self, event):
-    #     if event.type() == QEvent.WindowStateChange:
-    #         if self.windowState() & Qt.WindowMinimized:
-    #             self.mimimized.emit()
-    #     super().changeEvent(event)
 
     def _send_message(self):
         if user_input := self.input_widget.get_user_input():

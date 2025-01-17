@@ -16,6 +16,7 @@ from src.file_validator import read_systems_data
 from gui.styles import load_window_style
 from momo.system_models.system_models import SystemModel
 
+
 class StartWindow(QMainWindow):
     def __init__(self):
         super().__init__()
@@ -39,7 +40,7 @@ class StartWindow(QMainWindow):
                         <p>MoMo is a tool for morphological modeling.</p>
                         <p>Click the button below to create a new system.</p>
                       """)
-        label.setAlignment(Qt.AlignTop)
+        label.setAlignment(Qt.AlignTop | Qt.AlignCenter)
         systems_layout.addWidget(label)
 
         # Блок кнопок
@@ -56,7 +57,7 @@ class StartWindow(QMainWindow):
         buttons_layout.setAlignment(Qt.AlignCenter)
 
         systems_layout.addLayout(buttons_layout)
-        systems_layout.setContentsMargins(20, 20, 20, 20)
+        systems_layout.setContentsMargins(20, 20, 20, 60)
 
         self._window_widget.setLayout(systems_layout)
 

@@ -57,15 +57,15 @@ class SystemsTab(QWidget):
                 btn.clicked.connect(action)
             return btn
 
-        # TODO: Add actions to buttons
+        # TODO: Change action for the read button
         add_button = create_button('resources/img/buttons/add.png', 'Add new system', action=self.add_system_tab_via_dialog_window)
-        read_button = create_button('resources/img/buttons/import.png', 'Read system from Excel')
-        save_button = create_button('resources/img/buttons/save.png', 'Save selected system', action=self._save_selected_tab)
-        delete_button = create_button('resources/img/buttons/delete.png', 'Delete selected system', action=self._confirm_delete_selected_tab)
+        read_button = create_button('resources/img/buttons/import.png', 'Read system from Excel', action=self.main_window._upload_file)
+        save_button = create_button('resources/img/buttons/save.png', 'Save selected system', action=self._save_selected_table)
+        delete_button = create_button('resources/img/buttons/delete.png', 'Delete selected system', action=self._confirm_delete_selected_table)
 
         return [add_button, read_button, save_button, delete_button]
 
-    def add_system_tab(self, system_table: SystemTable):
+    def add_system_table(self, system_table: SystemTable):
         self.tabs.addTab(system_table, system_table._name)
         self.tabs.setCurrentIndex(self.tabs.count() - 1)
 
@@ -79,7 +79,7 @@ class SystemsTab(QWidget):
         if ok and tab_name.strip():
             system_model = SystemModel(name=tab_name)
             table_widget = SystemTable(system_model)
-            self.add_system_tab(table_widget)
+            self.add_system_table(table_widget)
             return True
         return False
 
@@ -90,20 +90,20 @@ class SystemsTab(QWidget):
 
         menu = QMenu(self)
         rename_action = QAction("Rename", self)
-        rename_action.triggered.connect(lambda: self._rename_tab(tab_index))
+        rename_action.triggered.connect(lambda: self._rename_table(tab_index))
         menu.addAction(rename_action)
 
         delete_action = QAction("Delete", self)
-        delete_action.triggered.connect(lambda: self._confirm_delete_tab(tab_index))
+        delete_action.triggered.connect(lambda: self._confirm_delete_table(tab_index))
         menu.addAction(delete_action)
 
         save_action = QAction("Save", self)
-        save_action.triggered.connect(lambda: self._save_tab(tab_index))
+        save_action.triggered.connect(lambda: self._save_table(tab_index))
         menu.addAction(save_action)
 
         menu.exec_(self.tabs.tabBar().mapToGlobal(pos))
 
-    def _rename_tab(self, index):
+    def _rename_table(self, index):
         old_name = self.tabs.tabText(index)
         new_name, ok = QInputDialog.getText(self, "Rename System", "Enter new tab name:", text=old_name)
 
@@ -114,31 +114,31 @@ class SystemsTab(QWidget):
             if self.on_content_change is not None:
                 self.on_content_change()
 
-    def _confirm_delete_tab(self, index):
+    def _confirm_delete_table(self, index):
         reply = QMessageBox.question(self, 'Confirm Delete', "Are you sure you want to delete this tab?",
                                      QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
         if reply == QMessageBox.Yes:
-            self._delete_tab(index)
+            self._delete_table(index)
 
             if self.on_content_change is not None:
                 self.on_content_change()
 
-    def _delete_tab(self, index):
+    def _delete_table(self, index):
         self.tabs.removeTab(index)
         if self.tabs.count() == 0:
             self.noTabsLeft.emit()
 
-    def _confirm_delete_selected_tab(self):
+    def _confirm_delete_selected_table(self):
         tab_index = self.tabs.currentIndex()
         if tab_index != -1:
-            self._confirm_delete_tab(tab_index)
+            self._confirm_delete_table(tab_index)
 
-    def _save_selected_tab(self):
+    def _save_selected_table(self):
         tab_index = self.tabs.currentIndex()
         if tab_index != -1:
-            self._save_tab(tab_index)
+            self._save_table(tab_index)
 
-    def _save_tab(self, index):
+    def _save_table(self, index):
         tab_widget = self.tabs.widget(index)
         if not tab_widget:
             return

@@ -1,12 +1,17 @@
 from PyQt5.QtWidgets import (
-    ###########################
-        QWidget,
-        QVBoxLayout,
-        QTableWidget,
-        QTableWidgetItem,
-        QLabel
-    )
-
+    QWidget,
+    QVBoxLayout,
+    QHBoxLayout,
+    QTableWidget,
+    QTableWidgetItem,
+    QLabel,
+    QPushButton,
+    QFileDialog,
+    QSizePolicy,
+    QHeaderView
+)
+from PyQt5.QtCore import Qt
+import pandas as pd
 from src.dtypes import ResultsMap
 
 
@@ -22,12 +27,25 @@ class ResultsTab(QWidget):
 
     def _init_ui(self):
         self.main_layout = QVBoxLayout()
+        self.header_layout = QHBoxLayout()
+
         self.label = QLabel("<h2>Results</h2>")
+        self.save_button = QPushButton("Save to Excel")
+
         self.table = QTableWidget()
+        self.table.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        header = self.table.horizontalHeader()
+        header.setSectionResizeMode(QHeaderView.Stretch)
+
+        self.header_layout.addWidget(self.label)
+        self.header_layout.addWidget(self.save_button, alignment=Qt.AlignRight)
+        self.main_layout.addLayout(self.header_layout)
+
+        self.main_layout.addWidget(self.table)
 
         self.setLayout(self.main_layout)
-        self.main_layout.addWidget(self.label)
-        self.main_layout.addWidget(self.table)
+
+        self.save_button.clicked.connect(self._save_to_excel)
 
         self._setup_table()
         self._set_up_table_data()
@@ -51,6 +69,15 @@ class ResultsTab(QWidget):
 
         self.table.sortByColumn(self.colums_len - 1, 1)
         self.table.resizeRowsToContents()
+
+    def _save_to_excel(self):
+        file_path, _ = QFileDialog.getSaveFileName(self, "Save Results", "", "Excel Files (*.xlsx)")
+        if file_path:
+            if not file_path.endswith(".xlsx"):
+                file_path += ".xlsx"
+
+            self._results.prototype.to_excel(file_path, index=False, sheet_name="Prototype")
+            self._results.results.to_excel(file_path, index=False, sheet_name="Results")
 
     @property
     def results(self):

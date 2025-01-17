@@ -35,7 +35,6 @@ class MoMoAgent:
 
 
     def _create_chain(self):
-        print(load_prompt())
         self.prompt = PromptTemplate(
             template=load_prompt(),
             input_keys=["history", "prototype", "results", "input"]
