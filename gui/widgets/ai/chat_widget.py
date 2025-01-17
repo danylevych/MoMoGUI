@@ -1,118 +1,137 @@
-from PyQt5.QtCore import QThread, pyqtSignal, QTimer
+from PyQt5.QtCore import pyqtSignal, QTimer, Qt, QEvent
 from PyQt5.QtWidgets import (
     ###########################
-    QLineEdit,
-    QPushButton,
     QVBoxLayout,
+    QStackedLayout,
     QWidget,
-    QScrollArea,
 )
 
-from gui.widgets.ai.chat_bubble import ChatBubble
-from gui.styles import load_momo_agent_style
+from .chat_bubble import ChatBubble
+from .chat_components.utils import ChatbotWorker
+from .chat_components.widgets import (
+    WelcomeScreenWidget, ChatScreenWidget, UserInputWidget
+)
+
 from src.assistant import MoMoAgent
+from gui.widgets.tabs.result_tab import ResultsTab
+from gui.styles import load_momo_agent_style
 
 
-class ChatbotWorker(QThread):
-    finished = pyqtSignal(str)
-
-    def __init__(self, agent, user_input):
-        super().__init__()
-        self.agent = agent
-        self.user_input = user_input
-
-    def run(self):
-        response = self.agent.ask(self.user_input)
-        self.finished.emit(response['text'])
-
-
-class ChatbotApp(QWidget):
+class ChatAssistantWindow(QWidget):
     finished = pyqtSignal()
 
     def __init__(self, parent=None):
         super().__init__()
 
         self.parent_widget = parent
-
-        layout = QVBoxLayout()
-
-        self.scroll_area = QScrollArea()
-        self.scroll_area.setWidgetResizable(True)
-
-        self.chat_widget = QWidget()
-        self.chat_layout = QVBoxLayout(self.chat_widget)
-        self.chat_layout.addStretch()
-        self.scroll_area.setWidget(self.chat_widget)
-
-        layout.addWidget(self.scroll_area)
-
-        self.text_input = QLineEdit(self)
-        self.text_input.returnPressed.connect(self.send_message)
-        layout.addWidget(self.text_input)
-
-        send_button = QPushButton("Send", self)
-        send_button.clicked.connect(self.send_message)
-        layout.addWidget(send_button)
-        self.setLayout(layout)
-
-        self.setStyleSheet(load_momo_agent_style())
-
         self.momo_agent = MoMoAgent()
         self.worker = None
         self.thinking_message = None
         self.thinking_timer = QTimer(self)
         self.thinking_dots = 0
 
+        self.main_layout = QVBoxLayout(self)
+        self.stacked_layout = QStackedLayout()
+        self.welcome_widget = WelcomeScreenWidget()
+        self.chat_widget = ChatScreenWidget()
+        self.input_widget = UserInputWidget()
+
+        self._init_ui()
+
+    def _init_ui(self):
+        self.input_widget.set_input_placeholder("Ask your question, I am waiting...")
+        self.input_widget.text_input.returnPressed.connect(self._send_message)
+        self.input_widget.send_button.clicked.connect(self._send_message)
+
+        self.stacked_layout.addWidget(self.welcome_widget)
+        self.stacked_layout.addWidget(self.chat_widget)
+        self.main_layout.addLayout(self.stacked_layout)
+        self.main_layout.addWidget(self.input_widget)
+
+        self.setStyleSheet(load_momo_agent_style())
 
     def closeEvent(self, event):
+        if self.worker:
+            self.worker.terminate()
         self.finished.emit()
         event.accept()
 
-    def send_message(self):
-        user_input = self.text_input.text().strip()
 
-        if user_input:
-            u_msg = ChatBubble(f"{user_input}", True, "You")
-            self.chat_layout.insertWidget(self.chat_layout.count() - 1, u_msg)
+    def _send_message(self):
+        if user_input := self.input_widget.get_user_input():
+            if self._is_welcome_screen_active():
+                self._switch_to_chat_screen()
 
-            self.thinking_message = ChatBubble("AI is thinking", False, "MoMo Assistant")
-            self.chat_layout.insertWidget(self.chat_layout.count() - 1, self.thinking_message)
-
-            self.thinking_timer.timeout.connect(self.update_thinking_message)
-            self.thinking_timer.start(500)
-
-            self.worker = ChatbotWorker(self.momo_agent, user_input)
-            self.worker.finished.connect(self.display_bot_response)
+            self._add_chat_bubble(user_input, is_user=True)
+            self._add_chat_bubble("AI is thinking", is_user=False, is_thinking=True)
+            self._start_asking(user_input)
 
 
-            self.momo_agent.results(
-                prototype=self.parent_widget.result_tab_data["prototype"].__str__(),
-                results=self.parent_widget.result_tab_data["df"].__str__(),
-            )
-
-            self.worker.start()
-
-            self.text_input.clear()
-
-            v_scroll = self.scroll_area.verticalScrollBar()
-            QTimer.singleShot(100, lambda: v_scroll.setValue(v_scroll.maximum()))
+    def _is_welcome_screen_active(self):
+        return self.stacked_layout.currentWidget() == self.welcome_widget
 
 
-    def update_thinking_message(self):
+    def _switch_to_chat_screen(self):
+        self.stacked_layout.setCurrentWidget(self.chat_widget)
+
+
+    def _add_chat_bubble(self, text, is_user, is_thinking=False):
+        if is_thinking:
+            self.thinking_message = ChatBubble(text, is_user, "You" if is_user else "MoMo Assistant")
+            self.chat_widget.chat_layout.insertWidget(self.chat_widget.chat_layout.count() - 1, self.thinking_message)
+            return
+
+        chat_bubble = ChatBubble(text, is_user, "You" if is_user else "MoMo Assistant")
+        self.chat_widget.chat_layout.insertWidget(self.chat_widget.chat_layout.count() - 1, chat_bubble)
+
+
+    def _start_asking(self, user_input):
+        self.thinking_timer.timeout.connect(self._update_thinking_message)
+        self.thinking_timer.start(500)
+
+        self.worker = ChatbotWorker(self.momo_agent, user_input)
+        self.worker.finished.connect(self._display_assistance_response)
+
+        self._set_current_tab_results()
+
+        self.worker.start()
+        self.input_widget.clear_input()
+        self._scroll_to_bottom()
+
+
+    def _scroll_to_bottom(self):
+        v_scroll = self.chat_widget.scroll_area.verticalScrollBar()
+        QTimer.singleShot(100, lambda: v_scroll.setValue(v_scroll.maximum()))
+
+
+    def _set_current_tab_results(self):
+        result_tab :ResultsTab = self.parent_widget.get_current_result_tab()
+
+        if not result_tab:
+            return
+
+        if result_tab.table_results.empty:
+            return
+
+        self.momo_agent.results(
+            prototype=result_tab.results.prototype.__str__(),
+            results=result_tab.table_results[:35].__str__(),
+            metric=result_tab.results.similarity_menshure_type.__str__()
+        )
+
+
+    def _update_thinking_message(self):
         self.thinking_dots = (self.thinking_dots + 1) % 4
         dots = '.' * self.thinking_dots
         self.thinking_message.label.setText(f"AI is thinking{dots}")
 
 
-    def display_bot_response(self, response):
+    def _display_assistance_response(self, response):
         self.thinking_timer.stop()
         if self.thinking_message:
-            self.chat_layout.removeWidget(self.thinking_message)
+            self.chat_widget.chat_layout.removeWidget(self.thinking_message)
             self.thinking_message.deleteLater()
             self.thinking_message = None
 
-        ai_msg = ChatBubble(f"{response}", False, "MoMo Assistant")
-        self.chat_layout.insertWidget(self.chat_layout.count() - 1, ai_msg)
-
-        v_scroll = self.scroll_area.verticalScrollBar()
-        QTimer.singleShot(100, lambda: v_scroll.setValue(v_scroll.maximum()))
+        self._add_chat_bubble(response, is_user=False)
+        self._scroll_to_bottom()

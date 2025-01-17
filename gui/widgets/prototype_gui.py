@@ -74,10 +74,16 @@ class PrototypeGUI(QWidget):
             checkbox.stateChanged.connect(lambda state, index=index: self.on_state_changed(index, state))
             self.table.setCellWidget(row_index, 2, checkbox)
 
+        self.table.cellClicked.connect(self.on_cell_clicked)
         self.table.resizeRowsToContents()
 
     def on_state_changed(self, index, state):
         self.prototype[index] = 1 if state == Qt.Checked else 0
+
+    def on_cell_clicked(self, row, column):
+        if column == 2:  # State column
+            checkbox = self.table.cellWidget(row, column)
+            checkbox.toggle()
 
     def get_prototype(self):
         return self.prototype

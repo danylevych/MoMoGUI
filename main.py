@@ -6,28 +6,15 @@ from gui.windows.start_window import StartWindow
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
-    # start_window = StartWindow()
-    # start_window.show()
-    # app.exec_()
+    start_window = StartWindow()
+    start_window.show()
+    app.exec_()
 
-    # systems_data = start_window.systems_data
-    # print("Systems data:", systems_data)
+    systems_data = start_window.systems_data
 
-    main_window = MainWindow([])
+    if not systems_data:
+        sys.exit()
+
+    main_window = MainWindow(systems_data)
     main_window.show()
     sys.exit(app.exec_())
-
-
-# from src.ai import MoMoAgent
-
-
-# agent = MoMoAgent()
-
-# print(agent.ask("hello"))
-# print("\n"*4)
-# print(agent.ask("What can you help me with?"))
-# print("\n"*4)
-# print(agent.memory)
-# print("\n"*4)
-# print(agent.ask("What is Morfological Method?"))
-

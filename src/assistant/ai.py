@@ -21,7 +21,7 @@ class MoMoAgent:
         self._set_llm(llm_type)
         self._create_chain()
 
-        self.results_dict = dict(prototype="", results="")
+        self.results_dict = dict(prototype="", results="", metric="")
 
     def _set_llm(self, llm_type: LLMType):
         if llm_type == LLMType.OLLAMA:
@@ -35,14 +35,13 @@ class MoMoAgent:
 
 
     def _create_chain(self):
-        print(load_prompt())
         self.prompt = PromptTemplate(
             template=load_prompt(),
             input_keys=["history", "prototype", "results", "input"]
         )
 
         self.memory = ConversationBufferWindowMemory(
-                k=3,
+                k=13,
                 input_key="input",
             )
 
@@ -53,9 +52,10 @@ class MoMoAgent:
         )
 
 
-    def results(self, prototype:str, results:str):
+    def results(self, prototype:str, results:str, metric:str):
         self.results_dict["prototype"] = prototype
         self.results_dict["results"] = results
+        self.results_dict["metric"] = metric
 
 
     def ask(self, input: str):
