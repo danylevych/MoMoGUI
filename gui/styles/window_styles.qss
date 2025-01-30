@@ -1,34 +1,33 @@
-/* ==============================
+/* =====================================
    BASIC SETTINGS
-   ============================== */
-
-/* Global style for all widgets */
-QWidget {
-    background-color: #FFFFFF;  /* White background */
-    color: #000000;             /* Black text by default */
+   ===================================== */
+   QWidget {
+    background-color: #FFFFFF;
+    color: #000000;
     font-family: "Segoe UI", sans-serif;
     font-size: 16px;
+    border-radius: 6px; /* Slight rounding for all basic widgets */
 }
 
-/* Reset margins and paddings for all child widgets (optional) */
+/* Resets margins and paddings for all child widgets (optional) */
 QWidget * {
     margin: 0px;
     padding: 0px;
 }
 
-/* ==============================
-   QLabel (text, headings, paragraphs)
-   ============================== */
-
-/* General QLabel style */
+/* =====================================
+   QLabel
+   ===================================== */
 QLabel {
-    color: #000000;     /* Black text */
+    color: #000000;
     font-family: "Segoe UI", sans-serif;
     font-size: 16px;
     padding: 5px;
+    margin-bottom: 10px;
+    /* border-radius inherited from QWidget if needed */
 }
 
-/* Heading (h1) */
+/* Headings (h1) inside QLabel */
 QLabel h1 {
     font-size: 28px;
     font-weight: bold;
@@ -37,7 +36,7 @@ QLabel h1 {
     text-align: center;
 }
 
-/* Paragraphs (p) */
+/* Paragraphs (p) inside QLabel */
 QLabel p {
     font-size: 16px;
     line-height: 1.6;
@@ -47,10 +46,9 @@ QLabel p {
     white-space: normal;
 }
 
-/* ==============================
-   QPushButton (buttons)
-   ============================== */
-/* Кнопки */
+/* =====================================
+   QPushButton
+   ===================================== */
 QPushButton {
     background-color: #666666;
     color: #FFFFFF;
@@ -73,34 +71,34 @@ QPushButton:pressed {
 }
 
 QPushButton:disabled {
-    background-color: #DDDDDD;  /* Світло-сірий для вимкнених кнопок */
+    background-color: #DDDDDD;
     color: #AAAAAA;
     border-color: #DDDDDD;
 }
 
-/* ==============================
-   QLineEdit (single-line text input)
-   ============================== */
+/* =====================================
+   QLineEdit
+   ===================================== */
 QLineEdit {
     background-color: #FFFFFF;
     color: #000000;
     border: 1px solid #000000;
-    border-radius: 4px;
+    border-radius: 6px;
     padding: 4px 8px;
 }
 
 QLineEdit:focus {
-    border-color: #666666;      /* Darker border on focus */
+    border-color: #666666;
 }
 
-/* ==============================
-   QPlainTextEdit / QTextEdit (multi-line text input)
-   ============================== */
+/* =====================================
+   QPlainTextEdit / QTextEdit
+   ===================================== */
 QPlainTextEdit, QTextEdit {
     background-color: #FFFFFF;
     color: #000000;
     border: 1px solid #000000;
-    border-radius: 4px;
+    border-radius: 6px;
     padding: 6px 8px;
 }
 
@@ -108,17 +106,17 @@ QPlainTextEdit:focus, QTextEdit:focus {
     border-color: #666666;
 }
 
-/* ==============================
+/* =====================================
    QComboBox
-   ============================== */
+   ===================================== */
 QComboBox {
     background-color: #FFFFFF;
     color: #000000;
     border: 1px solid #000000;
-    border-radius: 4px;
+    border-radius: 6px;
     padding: 4px 6px;
-    selection-background-color: #000000; /* Black highlight for selected items */
-    selection-color: #FFFFFF;           /* White text on black background */
+    selection-background-color: #000000;
+    selection-color: #FFFFFF;
 }
 
 QComboBox::drop-down {
@@ -126,12 +124,14 @@ QComboBox::drop-down {
     subcontrol-position: top right;
     width: 24px;
     border-left: 1px solid #000000;
+    border-top-right-radius: 6px;
+    border-bottom-right-radius: 6px;
 }
 
 QComboBox::down-arrow {
     width: 12px;
     height: 12px;
-    image: url(:/icons/arrow_down_black.png); /* Replace with your own black arrow icon */
+    image: url(:/icons/arrow_down_black.png);
 }
 
 QComboBox QAbstractItemView {
@@ -141,11 +141,12 @@ QComboBox QAbstractItemView {
     selection-color: #FFFFFF;
     outline: 0;
     border: 1px solid #000000;
+    border-radius: 6px;
 }
 
-/* ==============================
+/* =====================================
    QGroupBox
-   ============================== */
+   ===================================== */
 QGroupBox {
     border: 1px solid #000000;
     border-radius: 6px;
@@ -161,9 +162,9 @@ QGroupBox::title {
     background: transparent;
 }
 
-/* ==============================
+/* =====================================
    QCheckBox / QRadioButton
-   ============================== */
+   ===================================== */
 QCheckBox, QRadioButton {
     spacing: 6px;
     color: #000000;
@@ -172,9 +173,9 @@ QCheckBox, QRadioButton {
 QCheckBox::indicator, QRadioButton::indicator {
     width: 18px;
     height: 18px;
+    border-radius: 4px;
 }
 
-/* Unchecked (white) -> black border, Checked (black) -> black border, Indeterminate -> grey */
 QCheckBox::indicator:unchecked,
 QRadioButton::indicator:unchecked {
     border: 2px solid #000000;
@@ -192,13 +193,13 @@ QCheckBox::indicator:indeterminate {
     border: 2px solid #000000;
 }
 
-/* ==============================
-   QTabWidget, QTabBar, Tabs
-   ============================== */
+/* =====================================
+   QTabWidget / QTabBar
+   ===================================== */
 QTabWidget::pane {
     border: 1px solid #000000;
     background: #FFFFFF;
-    border-radius: 4px;
+    border-radius: 6px;
 }
 
 QTabBar::tab {
@@ -207,54 +208,78 @@ QTabBar::tab {
     border: 1px solid #000000;
     padding: 6px 12px;
     margin: 0px 1px;
-    border-top-left-radius: 4px;
-    border-top-right-radius: 4px;
+    border-top-left-radius: 6px;
+    border-top-right-radius: 6px;
 }
 
 QTabBar::tab:selected {
-    background: #CCCCCC; /* Grey background for active tab */
+    background: #CCCCCC;
     color: #000000;
 }
 
-/* ==============================
+/* =====================================
    QScrollBar (vertical and horizontal)
-   ============================== */
-/* Scrollbar track */
-QScrollBar:horizontal, QScrollBar:vertical {
-    background: #FFFFFF;
-    border: 1px solid #000000;
+   ===================================== */
+QScrollBar:horizontal,
+QScrollBar:vertical {
+    background: #DDDDDD;
+    border: 1px solid #666666;
     margin: 0px;
+    border-radius: 6px;
 }
 
-/* Scrollbar handle */
-QScrollBar::handle:horizontal, QScrollBar::handle:vertical {
-    background: #000000;
+QScrollBar::handle:horizontal,
+QScrollBar::handle:vertical {
+    background: #666666;
+    min-width: 20px;
+    min-height: 20px;
+    border-radius: 6px;
 }
 
-/* Scrollbar buttons */
-QScrollBar::add-line, QScrollBar::sub-line {
-    background: #FFFFFF;
-    border: 1px solid #000000;
+QScrollBar::handle:horizontal:hover,
+QScrollBar::handle:vertical:hover {
+    background: #555555;
+}
+
+QScrollBar::handle:horizontal:pressed,
+QScrollBar::handle:vertical:pressed {
+    background: #444444;
+}
+
+QScrollBar::add-page,
+QScrollBar::sub-page {
+    background: none;
+    border: none;
+}
+
+QScrollBar::add-line,
+QScrollBar::sub-line {
+    background: #DDDDDD;
+    border: 1px solid #666666;
     width: 16px;
     height: 16px;
     subcontrol-origin: margin;
+    border-radius: 6px;
 }
 
-QScrollBar::add-line:hover, QScrollBar::sub-line:hover {
-    background: #DDDDDD;
+QScrollBar::add-line:hover,
+QScrollBar::sub-line:hover {
+    background: #CCCCCC;
 }
 
-QScrollBar::up-arrow, QScrollBar::down-arrow,
-QScrollBar::left-arrow, QScrollBar::right-arrow {
-    image: url(:/icons/arrow_black.png); /* Replace with your own black-and-white icon */
+QScrollBar::up-arrow,
+QScrollBar::down-arrow,
+QScrollBar::left-arrow,
+QScrollBar::right-arrow {
+    image: url(:/icons/arrow_black.png);
 }
 
-/* ==============================
+/* =====================================
    QProgressBar
-   ============================== */
+   ===================================== */
 QProgressBar {
     border: 1px solid #000000;
-    border-radius: 4px;
+    border-radius: 6px;
     text-align: center;
     background: #FFFFFF;
 }
@@ -262,16 +287,18 @@ QProgressBar {
 QProgressBar::chunk {
     background-color: #000000;
     width: 10px;
+    border-radius: 6px;
 }
 
-/* ==============================
+/* =====================================
    QTableView / QTreeView
-   ============================== */
+   ===================================== */
 QTableView, QTreeView {
     gridline-color: #000000;
     selection-background-color: #888888;
     selection-color: #000000;
     border: 1px solid #000000;
+    border-radius: 6px;
 }
 
 QHeaderView::section {
@@ -279,6 +306,7 @@ QHeaderView::section {
     color: #000000;
     border: 1px solid #000000;
     padding: 4px;
+    border-radius: 0px; /* Typically headers don't blend well with corner rounding */
 }
 
 QTableCornerButton::section {
@@ -286,18 +314,20 @@ QTableCornerButton::section {
     border: 1px solid #000000;
 }
 
-/* ==============================
-   QMenuBar, QMenu
-   ============================== */
+/* =====================================
+   QMenuBar / QMenu
+   ===================================== */
 QMenuBar {
     background-color: #FFFFFF;
     border: 1px solid #000000;
+    border-radius: 6px;
 }
 
 QMenuBar::item {
     background: transparent;
     padding: 6px 12px;
     margin: 0px 1px;
+    border-radius: 6px;
 }
 
 QMenuBar::item:selected {
@@ -307,10 +337,12 @@ QMenuBar::item:selected {
 QMenu {
     background-color: #FFFFFF;
     border: 1px solid #000000;
+    border-radius: 6px;
 }
 
 QMenu::item {
     padding: 6px 12px;
+    border-radius: 6px;
 }
 
 QMenu::item:selected {
@@ -318,20 +350,20 @@ QMenu::item:selected {
     color: #FFFFFF;
 }
 
-/* ==============================
+/* =====================================
    QToolTip
-   ============================== */
+   ===================================== */
 QToolTip {
     background-color: #000000;
     color: #FFFFFF;
     border: 1px solid #FFFFFF;
     padding: 4px;
-    opacity: 200; /* Tooltip transparency */
+    opacity: 200;
 }
 
-/* ==============================
+/* =====================================
    QFrame (lines)
-   ============================== */
+   ===================================== */
 QFrame {
     border: none;
     background: transparent;
@@ -347,11 +379,4 @@ QFrame[frameShape="4"] {
 QFrame[frameShape="5"] {
     max-width: 1px;
     border: 1px solid #000000;
-}
-
-/* ==============================
-   Final margin override for QLabel
-   ============================== */
-QLabel {
-    margin-bottom: 10px;
 }

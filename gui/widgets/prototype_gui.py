@@ -9,10 +9,12 @@ from PyQt5.QtWidgets import (
         QLabel,
         QPushButton,
         QComboBox,
+        QSizePolicy,
+        QHeaderView,
     )
 
 from momo.prototype import Prototype
-from gui.widgets.utils import create_centered_checkbox
+from gui.widgets.centered_checkbox import CenteredCheckbox
 
 
 class PrototypeGUI(QWidget):
@@ -52,11 +54,17 @@ class PrototypeGUI(QWidget):
 
         self.populate_table()
 
-
     def populate_table(self):
         self.table.setRowCount(len(self.prototype))
         self.table.setColumnCount(3)
+
+        self.table.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        self.table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+
         self.table.setHorizontalHeaderLabels(["System", "Feature", "State"])
+
+        self.table.verticalHeader().setSectionResizeMode(QHeaderView.Fixed)
+        self.table.verticalHeader().setDefaultSectionSize(30)
 
         for row_index, (index, state) in enumerate(self.prototype.items()):
             system, feature = index
@@ -65,17 +73,15 @@ class PrototypeGUI(QWidget):
             system_item.setFlags(system_item.flags() & ~Qt.ItemIsEditable)
             self.table.setItem(row_index, 0, system_item)
 
-
             feature_item = QTableWidgetItem(feature)
             feature_item.setFlags(feature_item.flags() & ~Qt.ItemIsEditable)
             self.table.setItem(row_index, 1, feature_item)
 
-            checkbox = create_centered_checkbox(state=bool(state))
-            checkbox.stateChanged.connect(lambda state, index=index: self.on_state_changed(index, state))
+            checkbox = CenteredCheckbox(state=bool(state))
+            checkbox.stateChanged(lambda state, index=index: self.on_state_changed(index, state))
             self.table.setCellWidget(row_index, 2, checkbox)
 
         self.table.cellClicked.connect(self.on_cell_clicked)
-        self.table.resizeRowsToContents()
 
     def on_state_changed(self, index, state):
         self.prototype[index] = 1 if state == Qt.Checked else 0
