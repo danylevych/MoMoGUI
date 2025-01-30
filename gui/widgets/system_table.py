@@ -1,6 +1,7 @@
 from PyQt5.QtCore import Qt, pyqtSignal
 from PyQt5.QtWidgets import (
     ##########################
+        QHeaderView,
         QTableWidget,
         QWidget,
         QPushButton,
@@ -12,7 +13,7 @@ from PyQt5.QtWidgets import (
     )
 
 from momo.system_models.system_models import SystemModel
-from gui.widgets.utils import create_centered_checkbox
+from gui.widgets.centered_checkbox import CenteredCheckbox
 
 
 class SystemTable(QWidget):
@@ -53,14 +54,17 @@ class SystemTable(QWidget):
         self.table_widget.setColumnCount(len(system.data.columns))
         self.table_widget.setHorizontalHeaderLabels(system.data.columns)
         self.table_widget.setVerticalHeaderLabels(system.data.index)
+        header = self.table_widget.horizontalHeader()
+        header.setSectionResizeMode(QHeaderView.ResizeToContents)
+
         self._name = system.name
         self._fill_table(system)
 
     def _fill_table(self, system: SystemModel):
         for i, row in enumerate(system.data.iterrows()):
             for j, value in enumerate(row[1]):
-                checkbox = create_centered_checkbox(state=value)
-                self.table_widget.setCellWidget(i, j, checkbox)
+                self.table_widget.setCellWidget(i, j, CenteredCheckbox(value))
+
         self._notify_data_change()
 
     def _constructor_empty(self):
@@ -100,12 +104,10 @@ class SystemTable(QWidget):
 
     def delete_row(self, index):
         self.table_widget.removeRow(index)
-        self._check_empty_table()
         self._notify_data_change()
 
     def delete_column(self, index):
         self.table_widget.removeColumn(index)
-        self._check_empty_table()
         self._notify_data_change()
 
     def show_column_context_menu(self, pos):
@@ -161,15 +163,14 @@ class SystemTable(QWidget):
             self.table_widget.insertColumn(index)
             self.table_widget.setHorizontalHeaderItem(index, QTableWidgetItem(name))
             for i in range(self.table_widget.rowCount()):
-                self.table_widget.setCellWidget(i, index, create_centered_checkbox())
+                self.table_widget.setCellWidget(i, index, CenteredCheckbox())
             self._notify_data_change()
         elif type == "feature":
             self.table_widget.insertRow(index)
             self.table_widget.setVerticalHeaderItem(index, QTableWidgetItem(name))
             for i in range(self.table_widget.columnCount()):
-                self.table_widget.setCellWidget(index, i, create_centered_checkbox())
+                self.table_widget.setCellWidget(index, i, CenteredCheckbox())
             self._notify_data_change()
-
 
     def is_empty(self):
         return self.table_widget.rowCount() == 0 and self.table_widget.columnCount() == 0
@@ -192,9 +193,6 @@ class SystemTable(QWidget):
                 self.table_widget.removeColumn(index.column())
             self._notify_data_change()
 
-        if self.is_empty():
-            self._check_empty_table()
-
     def to_system_model(self):
         if self.is_empty():
             return SystemModel(self._name)
@@ -210,16 +208,3 @@ class SystemTable(QWidget):
         alternatives = [self.table_widget.horizontalHeaderItem(i).text() for i in range(self.table_widget.columnCount())]
 
         return SystemModel(self._name, data, features=features, alternatives=alternatives)
-
-
-
-
-
-
-    # def open_anahiepro_window(self):
-    #     if self.anahiepro_model is None or len(self.anahiepro_model.alternatives) != self.table_widget.columnCount():
-    #         problem = Problem(self._name)
-    #         alternatives = [Alternative(self.table_widget.horizontalHeaderItem(i).text()) for i in range(self.table_widget.columnCount())]
-    #         self.anahiepro_model = Model(problem=problem, criterias=[], alternatives=alternatives)
-    #     self.anahiepro_window = ComparisonMatrixWindow(self.anahiepro_model)
-    #     self.anahiepro_window.show()

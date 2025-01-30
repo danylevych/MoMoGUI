@@ -115,7 +115,7 @@ class ChatAssistantWindow(QWidget):
 
         self.momo_agent.results(
             prototype=result_tab.results.prototype.__str__(),
-            results=result_tab.table_results[:35].__str__(),
+            results=result_tab.table_results[:111].transpose().to_json(index=False),
             metric=result_tab.results.similarity_menshure_type.__str__()
         )
 
