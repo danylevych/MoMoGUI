@@ -9,7 +9,8 @@ from PyQt5.QtWidgets import (
         QVBoxLayout,
         QMenu,
         QInputDialog,
-        QTableWidgetItem
+        QTableWidgetItem,
+        QMessageBox
     )
 
 from momo.system_models.system_models import SystemModel
@@ -155,8 +156,23 @@ class SystemTable(QWidget):
             self._notify_data_change()
 
     def _get_name_for(self, type):
-        name, ok = QInputDialog.getText(self, f'Add {type}', f'Enter new {type} name:')
-        return name, ok
+        existing_names = set()
+
+        if type == "alternative":
+            existing_names = {self.table_widget.horizontalHeaderItem(i).text() for i in range(self.table_widget.columnCount())}
+        elif type == "feature":
+            existing_names = {self.table_widget.verticalHeaderItem(i).text() for i in range(self.table_widget.rowCount())}
+
+        while True:
+            name, ok = QInputDialog.getText(self, f'Add {type}', f'Enter new {type} name:')
+
+            if not ok or not name:
+                return None, False
+
+            if name in existing_names:
+                QMessageBox.warning(self, 'Error', f'The {type} name must be unique! Try again.')
+            else:
+                return name, ok
 
     def _add_and_fill(self, type, name, index):
         if type == "alternative":

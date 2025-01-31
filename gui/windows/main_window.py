@@ -1,4 +1,3 @@
-import sys
 from PyQt5.QtCore import Qt, pyqtSignal
 from PyQt5.QtWidgets import (
     ###########################
@@ -9,14 +8,10 @@ from PyQt5.QtWidgets import (
     QVBoxLayout,
     QSizePolicy,
     QFileDialog,
-    QToolButton,
-    QTabBar,
     QApplication,
     QDesktopWidget,
 )
 from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QIcon
-from PyQt5.QtCore import QSize
 
 from gui.widgets.prototype_gui import PrototypeGUI
 from gui.widgets.tabs.result_tab import ResultsTab
@@ -26,15 +21,13 @@ from gui.widgets.tabs.systems_tab import SystemsTab
 from gui.widgets.floating_button import FloatingButton
 from gui.styles import load_window_style, load_ask_ai_style
 from gui.widgets.ai.chat_widget import ChatAssistantWindow
+from gui.windows.utils.tab_manager import TabManager
 
 from src.file_validator import read_systems_data
 from src.dtypes import ResultsMap
 
 from momo.system_models.system_models import SystemModel
 from momo.model import MoMoModel
-
-
-from gui.windows.utils.tab_manager import TabManager
 
 
 class MainWindow(QMainWindow):
@@ -222,6 +215,20 @@ class MainWindow(QMainWindow):
         self.systems_tab = SystemsTab(parent=self.tabs_manager, main_window=self, on_content_change=self._update_window)
         self.systems_tab.noTabsLeft.connect(self._reset_to_empty_systems_tab)
         self.tabs_manager.remove_insert_tab(self.systems_tab, "Systems", 0)
+
+        for system_model in self.systems_data:
+            self.systems_tab.add_system_table(SystemTable(system_model))
+
+        self._recreate_prototype_gui()
+
+
+    def _read_from_excel(self):
+        file_path, _ = QFileDialog.getOpenFileName(self, "Open File", "", "Excel Files (*.xlsx *.xls)")
+
+        if not file_path:
+            return
+
+        self.systems_data = read_systems_data(file_path)
 
         for system_model in self.systems_data:
             self.systems_tab.add_system_table(SystemTable(system_model))
