@@ -251,7 +251,7 @@ class MainWindow(QMainWindow):
             similiraty_menshure_type=self.prototype_gui.get_similarity_measure_type()
         )
 
-        self.tabs_manager.add_result_tab(ResultsTab(reults_map))
+        self.tabs_manager.add_result_tab(ResultsTab(results=reults_map))
 
 
     def get_current_result_tab(self):

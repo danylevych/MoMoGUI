@@ -16,14 +16,15 @@ from src.dtypes import ResultsMap
 
 
 class ResultsTab(QWidget):
-    def __init__(self, results: ResultsMap, parent=None):
+    def __init__(self, results: ResultsMap, parent=None, system_tab=None):
         super().__init__(parent)
-        self._init_fields(results)
+        self._init_fields(results, system_tab)
         self._init_ui()
 
-    def _init_fields(self, results: ResultsMap):
+    def _init_fields(self, results: ResultsMap, system_tab):
         self._results = results
         self.colums_len = len(results.systems_names) + 1
+        self.system_tab = system_tab
 
     def _init_ui(self):
         self.main_layout = QVBoxLayout()
@@ -76,8 +77,12 @@ class ResultsTab(QWidget):
             if not file_path.endswith(".xlsx"):
                 file_path += ".xlsx"
 
-            self._results.prototype.to_excel(file_path, index=False, sheet_name="Prototype")
-            self._results.results.to_excel(file_path, index=False, sheet_name="Results")
+            with pd.ExcelWriter(file_path, engine='openpyxl') as writer:
+                self._results.results.to_excel(writer, index=False, sheet_name="Results")
+                self._results.prototype.to_excel(writer, sheet_name="Prototype", header=["State"])
+
+            if self.system_tab:
+                self.system_tab.save_to_file(file_path)
 
     @property
     def results(self):

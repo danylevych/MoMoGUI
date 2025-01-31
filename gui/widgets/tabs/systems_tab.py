@@ -162,6 +162,14 @@ class SystemsTab(QWidget):
             saver = ExcelSaver(file_path)
             saver.save_tab(self.tabs.tabText(index), data)
 
+    def save_to_file(self, file_path):
+        for i in range(self.tabs.count()):
+            tab_widget = self.tabs.widget(i)
+            if isinstance(tab_widget, SystemTable):
+                data = tab_widget.to_system_model().data
+                saver = ExcelSaver(file_path)
+                saver.save_tab(self.tabs.tabText(i), data)
+
     def _is_tab_name_exists(self, name: str) -> bool:
         for i in range(self.tabs.count()):
             if self.tabs.tabText(i).strip().lower() == name.strip().lower():
