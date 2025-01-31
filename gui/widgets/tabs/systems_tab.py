@@ -17,6 +17,8 @@ from PyQt5.QtWidgets import (
         QMessageBox
     )
 
+from src.file_validator import read_systems_data
+
 
 class SystemsTab(QWidget):
     noTabsLeft = pyqtSignal()
@@ -57,9 +59,8 @@ class SystemsTab(QWidget):
                 btn.clicked.connect(action)
             return btn
 
-        # TODO: Change action for the read button
         add_button = create_button('resources/img/buttons/add.png', 'Add new system', action=self.add_system_tab_via_dialog_window)
-        read_button = create_button('resources/img/buttons/import.png', 'Read system from Excel', action=self.main_window._upload_file)
+        read_button = create_button('resources/img/buttons/import.png', 'Read system from Excel', action=self.main_window._read_from_excel)
         save_button = create_button('resources/img/buttons/save.png', 'Save selected system', action=self._save_selected_table)
         delete_button = create_button('resources/img/buttons/delete.png', 'Delete selected system', action=self._confirm_delete_selected_table)
 
@@ -77,6 +78,10 @@ class SystemsTab(QWidget):
         tab_name, ok = QInputDialog.getText(self, "New Tab", "Enter the name of the new tab:")
 
         if ok and tab_name.strip():
+            if self._is_tab_name_exists(tab_name):
+                QMessageBox.warning(self, "Error", f"A system with the name '{tab_name}' already exists.")
+                return False
+
             system_model = SystemModel(name=tab_name)
             table_widget = SystemTable(system_model)
             self.add_system_table(table_widget)
@@ -108,6 +113,10 @@ class SystemsTab(QWidget):
         new_name, ok = QInputDialog.getText(self, "Rename System", "Enter new tab name:", text=old_name)
 
         if ok and new_name.strip():
+            if new_name != old_name and self._is_tab_name_exists(new_name):
+                QMessageBox.warning(self, "Error", f"A system with the name '{new_name}' already exists.")
+                return
+
             self.tabs.setTabText(index, new_name)
             self.tabs.widget(index)._name = new_name
 
@@ -152,3 +161,10 @@ class SystemsTab(QWidget):
         if file_path:
             saver = ExcelSaver(file_path)
             saver.save_tab(self.tabs.tabText(index), data)
+
+    def _is_tab_name_exists(self, name: str) -> bool:
+        for i in range(self.tabs.count()):
+            if self.tabs.tabText(i).strip().lower() == name.strip().lower():
+                return True
+        return False
+
