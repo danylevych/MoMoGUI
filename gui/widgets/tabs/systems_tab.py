@@ -17,7 +17,6 @@ from PyQt5.QtWidgets import (
         QMessageBox
     )
 
-from src.file_validator import read_systems_data
 
 
 class SystemsTab(QWidget):
@@ -61,10 +60,11 @@ class SystemsTab(QWidget):
 
         add_button = create_button('resources/img/buttons/add.png', 'Add new system', action=self.add_system_tab_via_dialog_window)
         read_button = create_button('resources/img/buttons/import.png', 'Read system from Excel', action=self.main_window._read_from_excel)
+        save_all_button = create_button('resources/img/buttons/save_all.png', 'Save all systems', action=self._save_all_tabs)
         save_button = create_button('resources/img/buttons/save.png', 'Save selected system', action=self._save_selected_table)
         delete_button = create_button('resources/img/buttons/delete.png', 'Delete selected system', action=self._confirm_delete_selected_table)
 
-        return [add_button, read_button, save_button, delete_button]
+        return [add_button, read_button, save_all_button, save_button, delete_button]
 
     def add_system_table(self, system_table: SystemTable):
         self.tabs.addTab(system_table, system_table._name)
@@ -102,7 +102,7 @@ class SystemsTab(QWidget):
         delete_action.triggered.connect(lambda: self._confirm_delete_table(tab_index))
         menu.addAction(delete_action)
 
-        save_action = QAction("Save", self)
+        save_action = QAction("Save Selected System", self)
         save_action.triggered.connect(lambda: self._save_table(tab_index))
         menu.addAction(save_action)
 
@@ -161,6 +161,12 @@ class SystemsTab(QWidget):
         if file_path:
             saver = ExcelSaver(file_path)
             saver.save_tab(self.tabs.tabText(index), data)
+
+    def _save_all_tabs(self):
+        file_path, _ = QFileDialog.getSaveFileName(self, "Save All Tabs as Excel", "", "Excel Files (*.xlsx)")
+
+        if file_path.strip():
+            self.save_to_file(file_path)
 
     def save_to_file(self, file_path):
         for i in range(self.tabs.count()):
