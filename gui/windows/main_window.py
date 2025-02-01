@@ -13,6 +13,10 @@ from PyQt5.QtWidgets import (
 )
 from PyQt5.QtCore import Qt
 
+import asyncio
+from PyQt5.QtWidgets import QProgressDialog
+
+
 from gui.widgets.prototype_gui import PrototypeGUI
 from gui.widgets.tabs.result_tab import ResultsTab
 from gui.widgets.tabs.empty_system_tab import EmptySystemsTab
@@ -139,7 +143,10 @@ class MainWindow(QMainWindow):
             prototype.loc[overlapping_idx] = self.cached_prototype.loc[overlapping_idx]
 
         self.prototype_gui = PrototypeGUI(prototype)
-        self.prototype_gui.calculate_button.clicked.connect(self._calculate_combinations)
+        self.prototype_gui.calculate_button.clicked.connect(
+            lambda: asyncio.create_task(self._calculate_combinations_async())
+        )
+
         self.prototype_widget.layout().addWidget(self.prototype_gui)
         self._resize_splitter()
 
@@ -236,22 +243,43 @@ class MainWindow(QMainWindow):
         self._recreate_prototype_gui()
 
 
-    def _calculate_combinations(self):
+    def _calculate_combinations_sync(self):
         if not self.systems_data:
-            return
+            return None
 
         prototype = self.prototype_gui.get_prototype()
         model = MoMoModel(self.systems_data, prototype)
         model.u = self.prototype_gui.get_similarity_measure_type()
 
-        reults_map = ResultsMap(
+        results_map = ResultsMap(
             systems_names=model.system_models_.get_system_names(),
             similarity_menshure=model.get_similarity_measures(),
             prototype=prototype,
             similiraty_menshure_type=self.prototype_gui.get_similarity_measure_type()
         )
 
-        self.tabs_manager.add_result_tab(ResultsTab(reults_map))
+        return results_map
+
+
+    async def _calculate_combinations_async(self):
+        if not self.systems_data:
+            return
+
+        progress_dialog = QProgressDialog("Calculating...", "Cancel", 0, 0, parent=self)
+        progress_dialog.setFixedSize(300, 100)
+        progress_dialog.setWindowTitle("Please wait")
+        progress_dialog.setWindowModality(Qt.WindowModal)
+        progress_dialog.show()
+
+        loop = asyncio.get_running_loop()
+        results_map = await loop.run_in_executor(None, self._calculate_combinations_sync)
+
+        progress_dialog.close()
+
+        if results_map is None:
+            return
+
+        self.tabs_manager.add_result_tab(ResultsTab(results=results_map))
 
 
     def get_current_result_tab(self):

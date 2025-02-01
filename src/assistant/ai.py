@@ -1,7 +1,7 @@
 
 from langchain_ollama import OllamaLLM
 from langchain_google_genai import ChatGoogleGenerativeAI
-from langchain_openai import OpenAI
+from langchain_openai import ChatOpenAI
 from langchain.prompts import PromptTemplate
 from langchain.chains import LLMChain
 from langchain.memory import ConversationBufferWindowMemory
@@ -16,7 +16,7 @@ class MoMoAgent:
     """
     The agent that will be used to interact with the user.
     """
-    def __init__(self, llm_type: LLMType = LLMType.GEMINI):
+    def __init__(self, llm_type: LLMType = LLMType.OPENAI):
 
         self._set_llm(llm_type)
         self._create_chain()
@@ -29,7 +29,7 @@ class MoMoAgent:
         elif llm_type == LLMType.GEMINI:
             self.llm = ChatGoogleGenerativeAI(model="gemini-1.5-flash", api_key=AI_API_KEYS.google_api_key)
         elif llm_type == LLMType.OPENAI:
-            self.llm = OpenAI(api_key=AI_API_KEYS.openai_api_key)
+            self.llm = ChatOpenAI(api_key=AI_API_KEYS.openai_api_key, model="gpt-4o")
         else:
             raise ValueError("Invalid LLMType")
 

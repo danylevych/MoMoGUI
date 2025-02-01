@@ -8,7 +8,8 @@ from PyQt5.QtWidgets import (
     QLabel,
     QPushButton,
     QInputDialog,
-    QWidget
+    QWidget,
+    QMessageBox
 )
 
 
@@ -36,14 +37,13 @@ class StartWindow(QMainWindow):
 
         label = QLabel()
         label.setText("""
-                      <h1>Welcome to MoMo</h1>
-                        <p>MoMo is a tool for morphological modeling.</p>
-                        <p>Click the button below to create a new system.</p>
+                    <h1>Welcome to MoMo</h1>
+                    <p>MoMo is a tool for morphological modeling.</p>
+                    <p>Click the button below to create a new system.</p>
                       """)
         label.setAlignment(Qt.AlignTop | Qt.AlignCenter)
         systems_layout.addWidget(label)
 
-        # Блок кнопок
         create_button = QPushButton("Create")
         create_button.setFixedWidth(100)
         create_button.clicked.connect(self._create_action)
@@ -66,6 +66,11 @@ class StartWindow(QMainWindow):
 
         if file_name:
             self._systems_data = read_systems_data(file_name)
+
+            if not self._systems_data:
+                QMessageBox.warning(self, "Error", "No systems found in the file. Please ensure the file has the correct format or data.")
+                return
+
             self.close()
 
     def _create_action(self):
