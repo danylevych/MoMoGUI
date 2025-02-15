@@ -24,9 +24,10 @@ class ResultsMap:
     def __init__(self,
                  data: dict=None,
                  systems_names: list[str]|tuple[str]|set[str]=None,
+                 systems: list[str]|tuple[str]|set[str]=None,
                  similarity_menshure: dict[tuple, float]=None,
                  prototype: Prototype=None,
-                 similiraty_menshure_type: SimilarityMenshureType|str=None,
+                 similiraty_menshure_type: SimilarityMenshureType|str=None
                 ):
         """
         Initialize the ResultsMap object.
@@ -59,8 +60,12 @@ class ResultsMap:
               (similarity_menshure is not None) and
               (prototype is not None) and
               (similiraty_menshure_type is not None)):
-            self._init_from_parts(systems_names, similarity_menshure,
-                                  prototype, similiraty_menshure_type)
+            self._init_from_parts(systems_names,
+                                  similarity_menshure,
+                                  prototype,
+                                  similiraty_menshure_type,
+                                  systems
+                                  )
 
     def _init_empty(self):
         """
@@ -68,6 +73,7 @@ class ResultsMap:
         """
         self._systems_names = []
         self._similarity_menshure = {}
+        self._systems = []
         self._prototype = Prototype()
         self._similarity_menshure_type = SimilarityMenshureType.Sorensen_Dice
 
@@ -125,7 +131,8 @@ class ResultsMap:
                          systems_names : list[str]|tuple[str]|set[str],
                          similarity_menshure : dict[tuple, float],
                          prototype : Prototype,
-                         similiraty_menshure_type : SimilarityMenshureType|str
+                         similiraty_menshure_type : SimilarityMenshureType|str,
+                         systems: list[str]|tuple[str]|set[str]
                          ):
         """
         Initialize the ResultsMap object from its parts.
@@ -146,6 +153,7 @@ class ResultsMap:
         self.similarity_menshure = similarity_menshure
         self.prototype = prototype
         self.similarity_menshure_type = similiraty_menshure_type
+        self.systems = systems
 
 #
 #                                   END CONSTRUCTORS
@@ -156,6 +164,13 @@ class ResultsMap:
 #
 #                                       PROPERTIES
 #
+    @property
+    def systems(self) -> list[str]:
+        """
+        Get the systems.
+        """
+        return self._systems
+
     @property
     def systems_names(self) -> list:
         """
@@ -216,6 +231,26 @@ class ResultsMap:
 #
 #                                       SETTERS
 #
+    @systems.setter
+    def systems(self, systems: list[str]|tuple[str]|set[str]):
+        """
+        Set the systems.
+
+        Parameters:
+        -----------
+        systems : list|tuple|set
+            A list of strings representing the names of the systems.
+
+        Raises:
+        -------
+        TypeError
+            If systems is not a list, tuple, or set.
+        """
+        if not isinstance(systems, (list, tuple, set)):
+            raise TypeError("Systems should be a list, tuple, or set")
+
+        self._systems = systems
+
     @systems_names.setter
     def systems_names(self, systems_names: list[str]|tuple[str]|set[str]):
         """

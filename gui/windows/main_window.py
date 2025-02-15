@@ -15,6 +15,7 @@ from PyQt5.QtCore import Qt
 
 import asyncio
 from PyQt5.QtWidgets import QProgressDialog
+import pandas as pd
 
 
 from gui.widgets.prototype_gui import PrototypeGUI
@@ -165,7 +166,7 @@ class MainWindow(QMainWindow):
 
         if self.prototype_gui:
             try:
-                self.prototype_gui.calculate_button.clicked.disconnect(self._calculate_combinations)
+                self.prototype_gui.calculate_button.clicked.disconnect()
             except TypeError:
                 print("Already disconnected")
                 pass
@@ -251,11 +252,13 @@ class MainWindow(QMainWindow):
         model = MoMoModel(self.systems_data, prototype)
         model.u = self.prototype_gui.get_similarity_measure_type()
 
+        pd.set_option('display.max_columns', None)
         results_map = ResultsMap(
             systems_names=model.system_models_.get_system_names(),
             similarity_menshure=model.get_similarity_measures(),
             prototype=prototype,
-            similiraty_menshure_type=self.prototype_gui.get_similarity_measure_type()
+            similiraty_menshure_type=self.prototype_gui.get_similarity_measure_type(),
+            systems=[system_model.data.__repr__() for system_model in self.systems_data]
         )
 
         return results_map

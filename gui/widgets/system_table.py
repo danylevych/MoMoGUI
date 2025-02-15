@@ -16,6 +16,9 @@ from PyQt5.QtWidgets import (
 from momo.system_models.system_models import SystemModel
 from gui.widgets.centered_checkbox import CenteredCheckbox
 
+from .utils import InputText
+
+
 
 class SystemTable(QWidget):
     dataChanged = pyqtSignal()
@@ -89,7 +92,7 @@ class SystemTable(QWidget):
 
     def _edit_row_header(self, index):
         current_text = self.table_widget.verticalHeaderItem(index).text()
-        new_text, ok = QInputDialog.getText(self, 'Edit Row Header', 'Enter new header text:', text=current_text)
+        new_text, ok = InputText.getText(self, 'Edit Row Header', 'Enter new header text:', text=current_text)
 
         if ok and new_text:
             self.table_widget.verticalHeaderItem(index).setText(new_text)
@@ -97,7 +100,7 @@ class SystemTable(QWidget):
 
     def _edit_column_header(self, index):
         current_text = self.table_widget.horizontalHeaderItem(index).text()
-        new_text, ok = QInputDialog.getText(self, 'Edit Column Header', 'Enter new header text:', text=current_text)
+        new_text, ok = InputText.getText(self, 'Edit Column Header', 'Enter new header text:', text=current_text)
 
         if ok and new_text:
             self.table_widget.horizontalHeaderItem(index).setText(new_text)
@@ -164,7 +167,7 @@ class SystemTable(QWidget):
             existing_names = {self.table_widget.verticalHeaderItem(i).text() for i in range(self.table_widget.rowCount())}
 
         while True:
-            name, ok = QInputDialog.getText(self, f'Add {type}', f'Enter new {type} name:')
+            name, ok = InputText.getText(self, f'Add {type}', f'Enter new {type} name:')
 
             if not ok or not name:
                 return None, False
