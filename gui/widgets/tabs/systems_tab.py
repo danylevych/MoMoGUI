@@ -17,6 +17,8 @@ from PyQt5.QtWidgets import (
         QMessageBox
     )
 
+from ..utils import InputText
+
 
 
 class SystemsTab(QWidget):
@@ -75,7 +77,7 @@ class SystemsTab(QWidget):
             self.on_content_change()
 
     def add_system_tab_via_dialog_window(self) -> bool:
-        tab_name, ok = QInputDialog.getText(self, "New Tab", "Enter the name of the new tab:")
+        tab_name, ok = InputText.getText(self, "New Tab", "Enter the name of the new tab:")
 
         if ok and tab_name.strip():
             if self._is_tab_name_exists(tab_name):
@@ -110,7 +112,7 @@ class SystemsTab(QWidget):
 
     def _rename_table(self, index):
         old_name = self.tabs.tabText(index)
-        new_name, ok = QInputDialog.getText(self, "Rename System", "Enter new tab name:", text=old_name)
+        new_name, ok = InputText.getText(self, "Rename System", "Enter new tab name:", text=old_name)
 
         if ok and new_name.strip():
             if new_name != old_name and self._is_tab_name_exists(new_name):

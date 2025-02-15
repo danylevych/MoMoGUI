@@ -21,12 +21,13 @@ class ChatBubble(QWidget):
         self.label.setWordWrap(True)
         self.label.setMidLineWidth(300)
         self.label.setText(html_text)
+        self.label.setTextInteractionFlags(Qt.TextSelectableByMouse)
 
         self.label.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
 
         self.outer_layout = QVBoxLayout(self)
-        self.outer_layout.setContentsMargins(0, 0, 0, 0)
+        self.outer_layout.setContentsMargins(10, 10, 10, 10)
 
         self.title_label = QLabel(title)
         self.title_label.setObjectName("title")
@@ -34,23 +35,113 @@ class ChatBubble(QWidget):
         self.bubble_layout = QHBoxLayout()
         self.bubble_layout.setContentsMargins(0, 0, 0, 0)
 
+
     def _get_html_text(self, text_markdown):
         table_style = """
-            <style>
-                table {
-                    border: 1px solid black;
-                    border-collapse: collapse;
-                    width: 100%;
-                }
-                th, td {
-                    border: 1px solid black;
-                    padding: 8px;
-                    text-align: left;
-                }
-            </style>
-        """
+        <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            font-size: 16px;
+            line-height: 1.8;
+            color: #2C2C2C;
+            background-color: #F8F8F8;
+            padding: 20px;
+        }
 
-        return table_style + markdown(text_markdown, extensions=['tables'])
+        .container {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 2px 2px 12px rgba(0, 0, 0, 0.1);
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        h1, h2, h3 {
+            color: #5E2D91;
+            font-weight: bold;
+            margin-top: 20px;
+        }
+
+        h1 {
+            font-size: 24px;
+            border-bottom: 3px solid #7A4F9A;
+            padding-bottom: 8px;
+        }
+
+        h2 {
+            font-size: 20px;
+            border-bottom: 2px solid #A57CC5;
+            padding-bottom: 6px;
+        }
+
+        h3 {
+            font-size: 18px;
+        }
+
+        table {
+            width: 100%;
+            margin: 15px 0;
+            margin-left: 20px;
+            border-radius: 10px;
+            border: 2px solid gray;
+        }
+
+        th {
+            background-color: #7A4F9A;
+            color: white;
+            font-weight: bold;
+            padding: 8px;
+            font-size: 14px;
+            text-align: center;
+        }
+
+        td {
+            font-size: 12px;
+            padding: 12px;
+            text-align: center;
+            border-bottom: 1px solid #D3B1E0;
+            background-color: transparent;
+        }
+
+        ul {
+            margin-left: 5px;
+            padding-left: 5px;
+        }
+
+        ul li {
+            margin-bottom: 8px;
+        }
+
+        ul ul {
+            margin-left: 10px;
+            padding-left: 12px;
+            list-style-type: "— ";
+        }
+
+        code {
+            font-family: "Courier New", monospace;
+            background-color: #EEE;
+            padding: 4px 8px;
+            border-radius: 5px;
+            font-size: 14px;
+            color: #5E2D91;
+        }
+
+        pre {
+            background-color: #EEE;
+            padding: 12px;
+            border-radius: 6px;
+            overflow-x: auto;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+        </style>
+        """
+        return table_style + text_markdown
+
+
+        # return markdown(text_markdown, extensions=['extra', 'tables'])
 
 
     def _handle_user(self, is_user):
@@ -67,9 +158,9 @@ class ChatBubble(QWidget):
             QLabel {
                 background-color: white;
                 color: #333333;
-                border: 1px solid #FFFFFF;
+                border: 1px solid #DDDDDD;
                 border-radius: 15px;
-                padding: 10px;
+                padding: 14px;
             }
             """
         )
@@ -84,11 +175,11 @@ class ChatBubble(QWidget):
         self.label.setStyleSheet(
             """
             QLabel {
-                background-color: #E8D8FF;
-                color: #5E2D91;
-                border: 1px solid #E8D8FF;
+                background-color: #D0BFFF;
+                color: #4B0082;
+                border: 2px solid #5E2D91;
                 border-radius: 15px;
-                padding: 10px;
+                padding: 14px;
             }
             """
         )

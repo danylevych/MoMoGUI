@@ -1,67 +1,104 @@
-
-from langchain_ollama import OllamaLLM
-from langchain_google_genai import ChatGoogleGenerativeAI
+from typing import List, Tuple
+from crewai import Agent, Task, Crew
+from crewai.memory import LongTermMemory
 from langchain_openai import ChatOpenAI
-from langchain.prompts import PromptTemplate
-from langchain.chains import LLMChain
-from langchain.memory import ConversationBufferWindowMemory
+from langchain_community.utilities import GoogleSerperAPIWrapper
+from crewai.tools import BaseTool
 
-from .llm_type import LLMType
-from .utils import load_prompt
-from ._api_keys import AI_API_KEYS
+from src.assistant._api_keys import AI_API_KEYS
+from src.assistant.configs.settings import AgentSettings
 
+
+class SearchTool(BaseTool):
+    name: str = "Search Tool"
+    description: str = "Search the web for additional information when needed."
+
+    def _run(self, query: str) -> str:
+        return GoogleSerperAPIWrapper(serper_api_key=AI_API_KEYS.serpsearch_api_key).run(query)
 
 
 class MoMoAgent:
-    """
-    The agent that will be used to interact with the user.
-    """
-    def __init__(self, llm_type: LLMType = LLMType.OPENAI):
-
-        self._set_llm(llm_type)
-        self._create_chain()
-
-        self.results_dict = dict(prototype="", results="", metric="")
-
-    def _set_llm(self, llm_type: LLMType):
-        if llm_type == LLMType.OLLAMA:
-            self.llm = OllamaLLM(model="llama3.2:1b")
-        elif llm_type == LLMType.GEMINI:
-            self.llm = ChatGoogleGenerativeAI(model="gemini-1.5-flash", api_key=AI_API_KEYS.google_api_key)
-        elif llm_type == LLMType.OPENAI:
-            self.llm = ChatOpenAI(api_key=AI_API_KEYS.openai_api_key, model="gpt-4o")
-        else:
-            raise ValueError("Invalid LLMType")
-
-
-    def _create_chain(self):
-        self.prompt = PromptTemplate(
-            template=load_prompt(),
-            input_keys=["history", "prototype", "results", "input"]
+    def __init__(self):
+        self.llm = ChatOpenAI(
+            api_key=AI_API_KEYS.openai_api_key,
+            model="gpt-4o-mini"
         )
+        self.crew = self._create_crew()
+        self._results_dict = {
+            "prototype": "",
+            "results": "",
+            "metric": ""
+        }
 
-        self.memory = ConversationBufferWindowMemory(
-                k=13,
-                input_key="input",
-            )
+    def _create_crew(self) -> Crew:
+        search_tool = [SearchTool()]
 
-        self.chain = LLMChain(
+        answer_agent, answer_task = self._create_agent_tasks(
+            settings_path="src/assistant/configs/settings/answer_agent.yaml",
             llm=self.llm,
-            prompt=self.prompt,
-            memory=self.memory
+            tools=search_tool
         )
 
+        return Crew(
+            agents=[answer_agent],
+            tasks=answer_task,
+            verbose=True,
+            memory=True
+        )
 
-    def results(self, prototype:str, results:str, metric:str):
-        self.results_dict["prototype"] = prototype
-        self.results_dict["results"] = results
-        self.results_dict["metric"] = metric
+    def _create_agent_tasks(self, settings_path: str, llm: str, tools: list = []) -> Tuple[Agent, List[Task]]:
+        settings = AgentSettings(settings_path)
+        agent = Agent(
+            name=settings.agent_settings.name,
+            role=settings.agent_settings.role,
+            goal=settings.agent_settings.goal,
+            backstory=settings.agent_settings.backstory,
+            verbose=settings.agent_settings.verbose,
+            allow_delegation=settings.agent_settings.allow_delegation,
+            llm=llm,
+            tools=tools,
+            max_retry_limit=5
+        )
+        tasks = [Task(
+            name=task.name,
+            description=task.description,
+            expected_output=task.expected_output,
+            agent=agent,
+            tools=tools
+        ) for task in settings.tasks_settings]
+        return agent, tasks
 
+    def set_results(self, prototype: str, results: str, metric: str, systems: str):
+        self._results_dict["prototype"] = prototype
+        self._results_dict["results"] = results
+        self._results_dict["metric"] = metric
+        self._results_dict["systems"] = systems
 
-    def ask(self, input: str):
-        ask_query_dict = self.results_dict.copy()
-        ask_query_dict["input"] = input
+    def ask(self, user_input):
+        result = self.crew.kickoff(inputs={
+            "input": user_input,
+            "prototype": self._results_dict["prototype"],
+            "results": self._results_dict["results"],
+            "metric": self._results_dict["metric"],
+            "systems": self._results_dict["systems"]
+        }).raw
 
-        response = self.chain.invoke(ask_query_dict)
+        return self._get_html_text(result)
 
-        return response
+    def _get_html_text(self, result):
+        prompt =f"""
+        You are an exper for converting markdown to html.
+        You have been asked to convert the following markdown to html:
+
+        ```markdown
+        {result}
+        ```
+
+        Output only the html content.
+        """
+        import re
+        markdown_pattern = re.compile(r"```html\n(.*?)\n```", re.DOTALL)
+        content = self.llm.invoke(prompt).content.strip()
+        html_text = markdown_pattern.search(content).group(1)
+        print(html_text)
+        return html_text

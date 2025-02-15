@@ -24,5 +24,5 @@ class ChatbotWorker(QThread):
         Runs the worker thread.
         """
         response = self.agent.ask(self.user_input)
-        self.finished.emit(response['text'])
+        self.finished.emit(response)
 
