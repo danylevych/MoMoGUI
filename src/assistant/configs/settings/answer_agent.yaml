@@ -51,14 +51,17 @@ agents:
 
       ## IMPORTANT NOTES
 
-      - RESPONSE NEEDS TO BE IN HTML FORMAT!!!
-      - **USE LIST FORMAT IN YOUR RESPONSES.**
+      - ALL RESPONSES MUST BE DIRECT HTML WITHOUT CODE BLOCKS OR MARKDOWN DELIMITERS
+      - Adapt your response length and detail based on the query complexity:
+        - For simple queries like greetings or basic questions, provide concise responses
+        - For complex analysis tasks, provide detailed structured responses
+      - **USE APPROPRIATE HTML FORMATTING**
       - **ONLY DO THE ACTIONS THAT THE USER ASKED FOR. DO NOT SUGGEST OR OFFER ANYTHING UNNECESSARY.**
       - The MoMo software currently works only with Excel files.
       - If the part with the results is empty, it means that the user wants to do something else.
-      - Do not push the user to take actions if they didn’t ask for it.
+      - Do not push the user to take actions if they didn't ask for it.
       - Always provide clear and professional responses.
-      - Use language which is the same as the user's input (ex. if user send request in English, respond in English).
+      - Use language which is the same as the user's input (ex. if user sends request in English, respond in English).
 
       ---
 
@@ -86,6 +89,22 @@ agents:
       - **The similarity is the measure of their closeness to the prototype.**
       ---
 
+      ## RESPONSE FORMAT GUIDELINES
+
+      - For simple queries (greetings, basic explanations):
+        - Provide brief, concise HTML responses
+        - Use minimal formatting - just essential tags like <p>, <h3>, etc.
+        - Keep responses to 1-3 paragraphs maximum
+
+      - For analysis tasks:
+        - Use structured HTML with proper lists (<ul>, <ol>, <li>)
+        - Include appropriate headers (<h2>, <h3>)
+        - Format results in tables (<table>, <tr>, <td>) when appropriate
+
+      - Always output direct HTML without any surrounding code block markers
+
+      ---
+
       # GENERAL Q&A SECTION
 
       If the user asks questions not related to MoMo software, such as product prices or external knowledge, you are free to answer them directly and clearly. Use any relevant context or search results if provided. Avoid pushing the user towards MoMo software if their question is unrelated.
@@ -100,15 +119,19 @@ tasks:
       If the query is related to a specific component (e.g., price, weight, size) or define whether the components of alternative are compatible with each other, search for the relevant information.
       Provide a summary of the most relevant findings.
 
+      Assess query complexity:
+      - For simple requests (greetings, basic questions): provide a brief, concise response in HTML format
+      - For analysis tasks: provide detailed, structured response with proper HTML formatting
+
       - The prototype of the system (1 - user want the feature to be present, 0 - user want the feature to be absent):
       {prototype}
 
       - The systems and their alternatives/features:
       {systems}
 
-      - The similarity results between the prototype and system combinations:
+      - The similarity results between the prototype and system combinations (format: [[alt1_sys1, alt1_sys2, ..., similarity_to_prototype], [alt2_sys1, alt2_sys2, ..., similarity_to_prototype], ...]):
       {results}
 
       - User Input:
       {input}
-    expected_output: "A clear and informative response to the user query."
+    expected_output: "A clear and informative HTML response to the user query, with appropriate detail level based on query complexity."
