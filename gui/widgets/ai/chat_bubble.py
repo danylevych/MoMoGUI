@@ -138,10 +138,10 @@ class ChatBubble(QWidget):
         }
         </style>
         """
-        return table_style + text_markdown
+        # return table_style + text_markdown
 
 
-        # return markdown(text_markdown, extensions=['extra', 'tables'])
+        return table_style + markdown(text_markdown, extensions=['extra', 'tables'])
 
 
     def _handle_user(self, is_user):

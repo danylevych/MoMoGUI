@@ -1,104 +1,151 @@
-from typing import List, Tuple
+from typing import List, Any
 from crewai import Agent, Task, Crew
-from crewai.memory import LongTermMemory
-from langchain_openai import ChatOpenAI
-from langchain_community.utilities import GoogleSerperAPIWrapper
-from crewai.tools import BaseTool
+from crewai.llm import LLM
 
-from src.assistant._api_keys import AI_API_KEYS
-from src.assistant.configs.settings import AgentSettings
-
-
-class SearchTool(BaseTool):
-    name: str = "Search Tool"
-    description: str = "Search the web for additional information when needed."
-
-    def _run(self, query: str) -> str:
-        return GoogleSerperAPIWrapper(serper_api_key=AI_API_KEYS.serpsearch_api_key).run(query)
+from .core.config_loader import AgentSettingsLoader
+from .models.data_model import AssistantData
+from ._api_keys import CONFIGS
+from crewai_tools import SerperDevTool
 
 
 class MoMoAgent:
+    """
+    MoMo AI Assistant using CrewAI
+
+    This class manages the AI assistant that can answer questions about
+    morphological modeling and analyze system data.
+    """
     def __init__(self):
-        self.llm = ChatOpenAI(
-            api_key=AI_API_KEYS.openai_api_key,
-            model="gpt-4o-mini"
-        )
+        """Initialize the MoMo AI assistant"""
+        # Select the LLM model based on available API keys
+        self.llm = self._create_llm()
+
+        # Data storage for context information
+        self.context_data = AssistantData()
+
+        # Create the crew of AI agents
         self.crew = self._create_crew()
-        self._results_dict = {
-            "prototype": "",
-            "results": "",
-            "metric": ""
-        }
+
+    def _create_llm(self) -> Any:
+        """
+        Create the language model based on available API keys
+
+        Returns:
+            An LLM instance from CrewAI
+        """
+        # Prefer OpenAI if available, fallback to Anthropic
+        if CONFIGS.openai_api_key:
+            return LLM(
+                api_key=CONFIGS.openai_api_key,
+                model=CONFIGS.model_to_use,
+            )
+        elif CONFIGS.anthropic_api_key:
+            return LLM(
+                api_key=CONFIGS.anthropic_api_key,
+                model=CONFIGS.model_to_use,
+            )
+        else:
+            raise ValueError("No API keys available for language models")
 
     def _create_crew(self) -> Crew:
-        search_tool = [SearchTool()]
+        """
+        Create the AI crew with agents and tasks
 
-        answer_agent, answer_task = self._create_agent_tasks(
-            settings_path="src/assistant/configs/settings/answer_agent.yaml",
-            llm=self.llm,
-            tools=search_tool
-        )
+        Returns:
+            Configured Crew instance
+        """
+        # Create tools
+        tools = []
+        if CONFIGS.serper_api_key:
+            import os
+            os.environ["SERPER_API_KEY"] = CONFIGS.serper_api_key
+            tools.append(SerperDevTool())
 
+        # Create agent and tasks
+        agent, tasks = self._create_agent_and_tasks(tools)
+
+        # Create and return the crew
         return Crew(
-            agents=[answer_agent],
-            tasks=answer_task,
+            agents=[agent],
+            tasks=tasks,
             verbose=True,
             memory=True
         )
 
-    def _create_agent_tasks(self, settings_path: str, llm: str, tools: list = []) -> Tuple[Agent, List[Task]]:
-        settings = AgentSettings(settings_path)
-        agent = Agent(
-            name=settings.agent_settings.name,
-            role=settings.agent_settings.role,
-            goal=settings.agent_settings.goal,
-            backstory=settings.agent_settings.backstory,
-            verbose=settings.agent_settings.verbose,
-            allow_delegation=settings.agent_settings.allow_delegation,
-            llm=llm,
-            tools=tools,
-            max_retry_limit=5
+    def _create_agent_and_tasks(self, tools: List) -> tuple:
+        """
+        Create an agent and its tasks based on config
+
+        Args:
+            tools: List of tools to provide to the agent
+
+        Returns:
+            Tuple of (agent, tasks)
+        """
+        # Load agent settings
+        agent_config, task_configs = AgentSettingsLoader.load_settings(
+            "src/assistant/configs/settings/answer_agent.yaml"
         )
-        tasks = [Task(
-            name=task.name,
-            description=task.description,
-            expected_output=task.expected_output,
-            agent=agent,
-            tools=tools
-        ) for task in settings.tasks_settings]
+
+        # Create the agent
+        agent = Agent(
+            name=agent_config.name,
+            role=agent_config.role,
+            goal=agent_config.goal,
+            backstory=agent_config.backstory,
+            verbose=agent_config.verbose,
+            allow_delegation=agent_config.allow_delegation,
+            llm=self.llm,
+            tools=tools,
+            max_retry_limit=3
+        )
+
+        # Create tasks
+        tasks = []
+        for task_config in task_configs:
+            tasks.append(Task(
+                name=task_config.name,
+                description=task_config.description,
+                expected_output=task_config.expected_output,
+                agent=agent,
+                tools=tools
+            ))
+
         return agent, tasks
 
     def set_results(self, prototype: str, results: str, metric: str, systems: str):
-        self._results_dict["prototype"] = prototype
-        self._results_dict["results"] = results
-        self._results_dict["metric"] = metric
-        self._results_dict["systems"] = systems
-
-    def ask(self, user_input):
-        result = self.crew.kickoff(inputs={
-            "input": user_input,
-            "prototype": self._results_dict["prototype"],
-            "results": self._results_dict["results"],
-            "metric": self._results_dict["metric"],
-            "systems": self._results_dict["systems"]
-        }).raw
-
-        return self._get_html_text(result)
-
-    def _get_html_text(self, result):
-        prompt =f"""
-        You are an exper for converting markdown to html.
-        You have been asked to convert the following markdown to html:
-
-        ```markdown
-        {result}
-        ```
-
-        Output only the html content.
         """
-        import re
-        markdown_pattern = re.compile(r"```html\n(.*?)\n```", re.DOTALL)
-        content = self.llm.invoke(prompt).content.strip()
-        html_text = markdown_pattern.search(content).group(1)
-        print(html_text)
-        return html_text
+        Set results data for context in conversations
+
+        Args:
+            prototype: The system prototype
+            results: The similarity results
+            metric: The similarity metric used
+            systems: The system descriptions
+        """
+        self.context_data.prototype = prototype
+        self.context_data.results = results
+        self.context_data.metric = metric
+        self.context_data.systems = systems
+
+    def ask(self, user_input: str) -> str:
+        """
+        Ask a question to the AI assistant
+
+        Args:
+            user_input: The user's question or request
+
+        Returns:
+            The assistant's response in HTML format
+        """
+        # Execute the crew's tasks with inputs
+        response = self.crew.kickoff(inputs={
+            "input": user_input,
+            "prototype": self.context_data.prototype,
+            "results": self.context_data.results,
+            "metric": self.context_data.metric,
+            "systems": self.context_data.systems
+        })
+
+        # Return the response as is (already in HTML format from the YAML prompt)
+        return response.raw
