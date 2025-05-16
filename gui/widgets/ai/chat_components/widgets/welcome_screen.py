@@ -14,8 +14,16 @@ class WelcomeScreenWidget(QWidget):
         welcome_layout = QVBoxLayout()
 
         self.welcome_label = QLabel((
-                "<h1>Welcome to the MoMo AI Chat Assistant!</h1>" +
-                "<p><b>Ask your questions below.</b></p>"
+                "<h1>🤖 Welcome to the MoMo AI Assistant!</h1>"+
+                "<p><b>✨ Ask me about:</b></p>"+
+                "<ul>"+
+                "<li>📊 Morphological system analysis</li>"+
+                "<li>🔍 Interpretation of results</li>"+
+                "<li>🧩 Selection of optimal combinations</li>"+
+                "<li>📝 How to use the program</li>"+
+                "</ul>"+
+                "<p>🔹 Just type your question below 👇</p>"
+
             )
         )
 

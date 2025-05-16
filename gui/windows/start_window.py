@@ -1,4 +1,5 @@
 from PyQt5.QtCore import Qt
+from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import (
     ##########################
     QMainWindow,
@@ -28,6 +29,9 @@ class StartWindow(QMainWindow):
 
         self.setStyleSheet(load_window_style())
         self.setFixedSize(470, 250)
+
+        self.setWindowIcon(QIcon("resources/img/logo/logo.ico"))
+
 
     def _init_ui(self):
         systems_layout = QVBoxLayout()
