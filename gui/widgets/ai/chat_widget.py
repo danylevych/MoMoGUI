@@ -4,6 +4,7 @@ from PyQt5.QtWidgets import (
     QStackedLayout,
     QWidget,
 )
+from PyQt5.QtGui import QIcon
 
 from .chat_bubble import ChatBubble
 from .chat_components.utils import ChatbotWorker
@@ -43,6 +44,8 @@ class ChatAssistantWindow(QWidget):
         self.input_widget = UserInputWidget()
 
         self._init_ui()
+
+        self.setWindowIcon(QIcon("resources/img/logo/logo.png"))
 
     def _init_ui(self):
         """Initialize the user interface"""

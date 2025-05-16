@@ -12,6 +12,7 @@ from PyQt5.QtWidgets import (
     QDesktopWidget,
 )
 from PyQt5.QtCore import Qt
+from PyQt5.QtGui import QIcon  # Додаємо імпорт для іконки
 
 import asyncio
 from PyQt5.QtWidgets import QProgressDialog
@@ -50,6 +51,8 @@ class MainWindow(QMainWindow):
         self._setup_ui()
         self.setStyleSheet(load_window_style())
 
+        self.setWindowIcon(QIcon("resources/img/logo/logo.ico"))
+
     def _setup_ui(self):
         self.splitter = QSplitter(Qt.Horizontal, parent=self)
         self.prototype_widget = QWidget(parent=self)
@@ -80,7 +83,7 @@ class MainWindow(QMainWindow):
     def _ask_ai_button(self):
         self.ask_ai_button = FloatingButton(parent=self)
         self.ask_ai_button.setStyleSheet(load_window_style())
-        self.ask_ai_button.button.setText("Ask AI")
+        self.ask_ai_button.button.setText("🤖 Ask AI")  # Додаємо емоджі робота до тексту кнопки
         self.ask_ai_button.button.setStyleSheet(load_ask_ai_style())
         self.ask_ai_button.button.clicked.connect(self._show_momo_agent_widget)
         self.ask_ai_button.show()
