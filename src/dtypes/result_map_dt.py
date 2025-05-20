@@ -121,7 +121,7 @@ class ResultsMap:
         if similiraty_menshure_type is None:
             similiraty_menshure_type = data["similarity_menshure_type"]
         else:
-            self._similarity_menshure = similiraty_menshure_type
+            self._similarity_menshure_type = similiraty_menshure_type
 
         self.systems_names = data["systems_names"]
         self.similarity_menshure = data["similarity_menshure"]
