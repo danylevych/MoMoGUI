@@ -45,6 +45,7 @@ Morphological analysis is a method for structured exploration of the complete se
 * Python 3.8+
 * PyQt5
 * pandas
+* openpyxl (required for Excel export)
 * NumPy
 * crewai (for the AI assistant)
 
