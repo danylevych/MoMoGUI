@@ -16,15 +16,14 @@ from src.dtypes import ResultsMap
 
 
 class ResultsTab(QWidget):
-    def __init__(self, results: ResultsMap, parent=None, system_tab=None):
+    def __init__(self, results: ResultsMap, parent=None):
         super().__init__(parent)
-        self._init_fields(results, system_tab)
+        self._init_fields(results)
         self._init_ui()
 
-    def _init_fields(self, results: ResultsMap, system_tab):
+    def _init_fields(self, results: ResultsMap):
         self._results = results
         self.colums_len = len(results.systems_names) + 1
-        self.system_tab = system_tab
 
     def _init_ui(self):
         self.main_layout = QVBoxLayout()
@@ -33,13 +32,18 @@ class ResultsTab(QWidget):
         self.label = QLabel("<h2>Results</h2>")
         self.save_button = QPushButton("Save to Excel")
 
+        # Button layout
+        buttons_layout = QHBoxLayout()
+        buttons_layout.addWidget(self.save_button)
+        buttons_layout.setAlignment(Qt.AlignRight)
+
         self.table = QTableWidget()
         self.table.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         header = self.table.horizontalHeader()
         header.setSectionResizeMode(QHeaderView.Stretch)
 
         self.header_layout.addWidget(self.label)
-        self.header_layout.addWidget(self.save_button, alignment=Qt.AlignRight)
+        self.header_layout.addLayout(buttons_layout)
         self.main_layout.addLayout(self.header_layout)
 
         self.main_layout.addWidget(self.table)
@@ -56,19 +60,18 @@ class ResultsTab(QWidget):
         self.table.setHorizontalHeaderLabels(list(self._results.systems_names) + ["Similarity"])
         self.table.setSortingEnabled(True)
 
-
     def _set_up_table_data(self):
         self.table.clearContents()
         self.table.setRowCount(0)
 
-        self.table.setRowCount(len(self._results.similarity_menshure))
+        results_df = self._results.results
+        self.table.setRowCount(len(results_df))
 
-        for row_index, (key, value) in enumerate(self._results.similarity_menshure.items()):
-            for col_index, system in enumerate(key):
-                self.table.setItem(row_index, col_index, QTableWidgetItem(system))
-            self.table.setItem(row_index, self.colums_len - 1, QTableWidgetItem(f"{value:.3f}"))
+        for row_index, row in results_df.iterrows():
+            for col_index, value in enumerate(row):
+                self.table.setItem(row_index, col_index, QTableWidgetItem(str(value)))
 
-        self.table.sortByColumn(self.colums_len - 1, 1)
+        self.table.sortByColumn(self.colums_len - 1, Qt.DescendingOrder)
         self.table.resizeRowsToContents()
 
     def _save_to_excel(self):
@@ -76,13 +79,7 @@ class ResultsTab(QWidget):
         if file_path:
             if not file_path.endswith(".xlsx"):
                 file_path += ".xlsx"
-
-            with pd.ExcelWriter(file_path, engine='openpyxl') as writer:
-                self._results.results.to_excel(writer, index=False, sheet_name="Results")
-                self._results.prototype.to_excel(writer, sheet_name="Prototype", header=["State"])
-
-            if self.system_tab:
-                self.system_tab.save_to_file(file_path)
+            self._results.to_excel(file_path)
 
     @property
     def results(self):
