@@ -12,7 +12,7 @@ from PyQt5.QtWidgets import (
     QDesktopWidget,
 )
 from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QIcon  # Додаємо імпорт для іконки
+from PyQt5.QtGui import QIcon
 
 import asyncio
 from PyQt5.QtWidgets import QProgressDialog
@@ -29,7 +29,7 @@ from gui.styles import load_window_style, load_ask_ai_style
 from gui.widgets.ai.chat_widget import ChatAssistantWindow
 from gui.windows.utils.tab_manager import TabManager
 
-from src.file_validator import read_systems_data
+from src.file_validator import load_systems_data, ExcelFileValidator
 from src.dtypes import ResultsMap
 
 from momo.system_models.system_models import SystemModel
@@ -39,9 +39,10 @@ from momo.model import MoMoModel
 class MainWindow(QMainWindow):
     systemsLoaded = pyqtSignal(list)
 
-    def __init__(self, systems_data: list[SystemModel] = None):
+    def __init__(self, systems_data: list[SystemModel] = None, results_map: ResultsMap = None):
         super().__init__()
         self.systems_data = systems_data or []
+        self.results_map = results_map
         self.systems_tab = None
         self.empty_systems_tab = None
         self.prototype_gui = None
@@ -49,9 +50,15 @@ class MainWindow(QMainWindow):
         self.chat_window = None
 
         self._setup_ui()
-        self.setStyleSheet(load_window_style())
 
+        if self.results_map and self.results_map.prototype is not None:
+            self.cached_prototype = self.results_map.prototype
+
+        self.setStyleSheet(load_window_style())
         self.setWindowIcon(QIcon("resources/img/logo/logo.ico"))
+
+        if self.results_map:
+            self.tabs_manager.add_result_tab(ResultsTab(results=self.results_map))
 
     def _setup_ui(self):
         self.splitter = QSplitter(Qt.Horizontal, parent=self)
@@ -83,7 +90,7 @@ class MainWindow(QMainWindow):
     def _ask_ai_button(self):
         self.ask_ai_button = FloatingButton(parent=self)
         self.ask_ai_button.setStyleSheet(load_window_style())
-        self.ask_ai_button.button.setText("🤖 Ask AI")  # Додаємо емоджі робота до тексту кнопки
+        self.ask_ai_button.button.setText("Ask AI")
         self.ask_ai_button.button.setStyleSheet(load_ask_ai_style())
         self.ask_ai_button.button.clicked.connect(self._show_momo_agent_widget)
         self.ask_ai_button.show()
@@ -133,20 +140,26 @@ class MainWindow(QMainWindow):
     def _init_empty_systems_tab(self):
         self.empty_systems_tab = EmptySystemsTab(parent=self.tabs_manager)
         self.empty_systems_tab.add_tab_button.clicked.connect(self._create_first_system_tab)
-        self.empty_systems_tab.upload_file_button.clicked.connect(self._upload_file)
+        self.empty_systems_tab.load_from_file_button.clicked.connect(self._upload_file)
 
 
     def _create_prototype_gui(self):
         if not self.systems_data:
             return
 
-        prototype = MoMoModel(self.systems_data).get_prototype()
+        if self.results_map and self.results_map.prototype is not None:
+            prototype = self.results_map.prototype
+            measure_type = self.results_map.similarity_measure_type
+        else:
+            prototype = MoMoModel(self.systems_data).get_prototype()
+            measure_type = None
 
-        if self.cached_prototype is not None and not self.cached_prototype.empty:
-            overlapping_idx = prototype.index.intersection(self.cached_prototype.index)
-            prototype.loc[overlapping_idx] = self.cached_prototype.loc[overlapping_idx]
+            if self.cached_prototype is not None and not self.cached_prototype.empty:
+                overlapping_idx = prototype.index.intersection(self.cached_prototype.index)
+                prototype.loc[overlapping_idx] = self.cached_prototype.loc[overlapping_idx]
 
         self.prototype_gui = PrototypeGUI(prototype)
+        self.prototype_gui.set_measure_type(measure_type)
         self.prototype_gui.calculate_button.clicked.connect(
             lambda: asyncio.create_task(self._calculate_combinations_async())
         )
@@ -221,7 +234,26 @@ class MainWindow(QMainWindow):
         if not file_path:
             return
 
-        self.systems_data = read_systems_data(file_path)
+        file_validator = ExcelFileValidator()
+        is_results_file = file_validator.is_results_file(file_path)
+
+        # If this is a results file, load it first
+        if is_results_file:
+            try:
+                self.results_map = ResultsMap.from_excel(file_path)
+                self.systems_data = load_systems_data(file_path)
+                # Always update cached prototype with results prototype
+                if self.results_map and self.results_map.prototype is not None:
+                    self.cached_prototype = self.results_map.prototype
+            except Exception as e:
+                print(f"Error loading results: {e}")
+                return
+        else:
+            # Regular system file
+            self.systems_data = load_systems_data(file_path)
+
+        if not self.systems_data:
+            return
 
         self.systems_tab = SystemsTab(parent=self.tabs_manager, main_window=self, on_content_change=self._update_window)
         self.systems_tab.noTabsLeft.connect(self._reset_to_empty_systems_tab)
@@ -232,6 +264,9 @@ class MainWindow(QMainWindow):
 
         self._recreate_prototype_gui()
 
+        if is_results_file and self.results_map:
+            self.tabs_manager.add_result_tab(ResultsTab(results=self.results_map))
+
 
     def _read_from_excel(self):
         file_path, _ = QFileDialog.getOpenFileName(self, "Open File", "", "Excel Files (*.xlsx *.xls)")
@@ -239,11 +274,32 @@ class MainWindow(QMainWindow):
         if not file_path:
             return
 
-        self.systems_data = read_systems_data(file_path)
+        file_validator = ExcelFileValidator()
+        is_results_file = file_validator.is_results_file(file_path)
 
-        for system_model in self.systems_data:
+        # If this is a results file, load it first
+        if is_results_file:
+            try:
+                self.results_map = ResultsMap.from_excel(file_path)
+                new_systems = load_systems_data(file_path)
+                # Always update cached prototype with results prototype
+                self.cached_prototype = self.results_map.prototype
+            except Exception as e:
+                print(f"Error loading results: {e}")
+                return
+        else:
+            # Regular system file
+            new_systems = load_systems_data(file_path)
+
+        if not new_systems:
+            return
+
+        # Add the new systems to the existing systems tab
+        for system_model in new_systems:
             self.systems_tab.add_system_table(SystemTable(system_model))
+            self.systems_data.append(system_model)
 
+        self.results_map = None
         self._recreate_prototype_gui()
 
 
@@ -256,12 +312,12 @@ class MainWindow(QMainWindow):
         model.u = self.prototype_gui.get_similarity_measure_type()
 
         pd.set_option('display.max_columns', None)
+
         results_map = ResultsMap(
-            systems_names=model.system_models_.get_system_names(),
-            similarity_menshure=model.get_similarity_measures(),
+            systems=model.system_models,
+            similarity_measures=model.get_similarity_measures(),
             prototype=prototype,
-            similiraty_menshure_type=self.prototype_gui.get_similarity_measure_type(),
-            systems=[system_model.data.__repr__() for system_model in self.systems_data]
+            similarity_measure_type=self.prototype_gui.get_similarity_measure_type()
         )
 
         return results_map
@@ -275,17 +331,38 @@ class MainWindow(QMainWindow):
         progress_dialog.setFixedSize(300, 100)
         progress_dialog.setWindowTitle("Please wait")
         progress_dialog.setWindowModality(Qt.WindowModal)
-        progress_dialog.show()
 
-        loop = asyncio.get_running_loop()
-        results_map = await loop.run_in_executor(None, self._calculate_combinations_sync)
+        future = None
 
-        progress_dialog.close()
+        def cancel_calculation():
+            if future:
+                future.cancel()
+            progress_dialog.close()
 
-        if results_map is None:
-            return
+        progress_dialog.canceled.connect(cancel_calculation)
 
-        self.tabs_manager.add_result_tab(ResultsTab(results=results_map))
+        try:
+            loop = asyncio.get_running_loop()
+            future = loop.run_in_executor(None, self._calculate_combinations_sync)
+
+            await asyncio.sleep(0.5)
+            if not future.done():
+                progress_dialog.show()
+
+            results_map = await future
+
+            if progress_dialog.wasCanceled():
+                return
+
+            if results_map is None:
+                return
+
+            self.tabs_manager.add_result_tab(ResultsTab(results=results_map))
+
+        except Exception as e:
+            print(f"Error during calculation: {e}")
+        finally:
+            progress_dialog.close()
 
 
     def get_current_result_tab(self):

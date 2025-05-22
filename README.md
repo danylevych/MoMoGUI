@@ -54,7 +54,7 @@ Morphological analysis is a method for structured exploration of the complete se
 1. Clone the repository:
 
    ```
-   git clone https://github.com/yourusername/MoMoAna.git
+   git clone hhttps://github.com/danylevych/MoMoGUI.git
    ```
 
 2. Install dependencies:
@@ -63,7 +63,19 @@ Morphological analysis is a method for structured exploration of the complete se
    pip install -r requirements.txt
    ```
 
-3. Run the program:
+3. Configure API Keys:
+
+   Create a `.env` file in the root directory based on the provided `.env.example`:
+
+   ```
+   cp .env.example .env
+   ```
+
+   Then open the `.env` file and add your API keys:
+   - `OPENAI_API_KEY`: Required for the AI assistant to function
+   - `SERPSEARCH_API_KEY`: Required for search functionality in the AI assistant
+
+4. Run the program:
 
    ```
    python main.py

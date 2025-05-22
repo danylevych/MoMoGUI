@@ -13,11 +13,11 @@ async def wait_for_close(widget: QWindow):
         await asyncio.sleep(0.1)
 
 
-async def run_app(systems_data=[]):
+async def run_app(systems_data=None, results_map=None):
     if not systems_data:
         return
 
-    main_window = MainWindow(systems_data)
+    main_window = MainWindow(systems_data=systems_data, results_map=results_map)
     main_window.show()
 
     await wait_for_close(main_window)
@@ -33,6 +33,11 @@ if __name__ == "__main__":
     asyncio.set_event_loop(loop)
     with loop:
         try:
-            loop.run_until_complete(run_app(systems_data=start_window.systems_data))
+            loop.run_until_complete(
+                run_app(
+                    systems_data=start_window.systems_data,
+                    results_map=start_window.results_map
+                )
+            )
         except RuntimeError:
             loop.stop()

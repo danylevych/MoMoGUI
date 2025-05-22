@@ -43,7 +43,7 @@ class PrototypeGUI(QWidget):
         self.u_label.setFont(font)
 
         self.u_type = QComboBox()
-        self.u_type.addItems(["Sorensen–Dice", "Jaccard"])
+        self.u_type.addItems(["Sorensen-Dice", "Jaccard"])
 
         similarity_layout.addRow(self.u_label, self.u_type)
         self.main_layout.addLayout(similarity_layout)
@@ -94,5 +94,13 @@ class PrototypeGUI(QWidget):
     def get_prototype(self):
         return self.prototype
 
+    def set_measure_type(self, measure_type: str):
+        if measure_type == "sorensen_dice":
+            self.u_type.setCurrentIndex(0)
+        elif measure_type == "jaccard":
+            self.u_type.setCurrentIndex(1)
+        else:
+            pass
+
     def get_similarity_measure_type(self):
-        return self.u_type.currentText().replace("–", "_").lower()
+        return self.u_type.currentText().replace("-", "_").lower()

@@ -16,11 +16,11 @@ class EmptySystemsTab(QWidget):
 
         self.add_tab_button = QPushButton("Add")
         self.add_tab_button.setFixedWidth(100)
-        self.upload_file_button = QPushButton("Upload")
-        self.upload_file_button.setFixedWidth(100)
+        self.load_from_file_button = QPushButton("Load File")
+        self.load_from_file_button.setFixedWidth(100)
 
         buttons_layout.addWidget(self.add_tab_button)
-        buttons_layout.addWidget(self.upload_file_button)
+        buttons_layout.addWidget(self.load_from_file_button)
         buttons_layout.setAlignment(Qt.AlignCenter)
 
         systems_layout.addStretch()
@@ -35,4 +35,4 @@ class EmptySystemsTab(QWidget):
         self.add_tab_button.clicked.connect(action)
 
     def connect_action_to_upload_button(self, action):
-        self.upload_file_button.clicked.connect(action)
+        self.load_from_file_button.clicked.connect(action)
